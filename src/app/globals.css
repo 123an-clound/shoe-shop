@@ -1,0 +1,181 @@
+@import "tailwindcss";
+
+/* Giá trị dự phòng — bị ghi đè bởi thẻ <style> mà layout.tsx bơm vào từ veloce_settings */
+:root {
+  --brand-primary: #8b5cf6; /* violet */
+  --brand-secondary: #d946ef; /* fuchsia */
+  --brand-accent: #22d3ee; /* cyan */
+
+  --gradient-aurora: linear-gradient(
+    135deg,
+    var(--brand-primary) 0%,
+    var(--brand-secondary) 45%,
+    var(--brand-accent) 100%
+  );
+  --shadow-glow: 0 0 40px -8px
+    color-mix(in oklab, var(--brand-primary) 55%, transparent);
+}
+
+/* ⚠️ BẮT BUỘC dùng `@theme inline` cho tầng màu thương hiệu.
+   Thiếu từ khoá `inline`, Tailwind resolve ra mã hex ngay lúc build và
+   admin đổi màu trong database sẽ không có tác dụng gì lên giao diện. */
+@theme inline {
+  --color-brand: var(--brand-primary);
+  --color-brand-2: var(--brand-secondary);
+  --color-brand-3: var(--brand-accent);
+}
+
+@theme {
+  /* Nền — tối, hơi ngả tím, KHÔNG dùng #000 thuần */
+  --color-ink-950: #07060d; /* nền trang */
+  --color-ink-900: #0d0b18; /* nền section xen kẽ */
+  --color-ink-800: #151226; /* nền card đặc */
+  --color-ink-700: #1f1a35; /* border, divider */
+
+  /* Chữ */
+  --color-fg: #f4f2ff;
+  --color-fg-muted: #a5a0c0;
+  --color-fg-subtle: #6b6690;
+
+  /* Điểm nhấn cố định — không cho admin đổi */
+  --color-neon-lime: #a3e635; /* chỉ dùng cho badge "SALE" / "NEW" */
+
+  /* Font — sinh bởi next/font trong layout.tsx */
+  --font-display: var(--font-space-grotesk), system-ui, sans-serif;
+  --font-body: var(--font-inter), system-ui, sans-serif;
+
+  /* Bo góc */
+  --radius-card: 20px;
+
+  /* Aurora blobs trôi chậm ở nền — xem AuroraBackground.tsx */
+  --animate-aurora-1: aurora-drift-1 26s ease-in-out infinite;
+  --animate-aurora-2: aurora-drift-2 32s ease-in-out infinite;
+  --animate-aurora-3: aurora-drift-3 22s ease-in-out infinite;
+}
+
+@keyframes aurora-drift-1 {
+  0%,
+  100% {
+    transform: translate(-8%, -8%) scale(1);
+  }
+  50% {
+    transform: translate(8%, 4%) scale(1.15);
+  }
+}
+
+@keyframes aurora-drift-2 {
+  0%,
+  100% {
+    transform: translate(6%, -4%) scale(1.05);
+  }
+  50% {
+    transform: translate(-6%, 8%) scale(0.95);
+  }
+}
+
+@keyframes aurora-drift-3 {
+  0%,
+  100% {
+    transform: translate(-4%, 6%) scale(0.95);
+  }
+  50% {
+    transform: translate(4%, -6%) scale(1.1);
+  }
+}
+
+@layer base {
+  * {
+    border-color: var(--color-ink-700);
+  }
+
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--color-ink-950);
+    color: var(--color-fg);
+    font-family: var(--font-body);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.03em;
+  }
+
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer utilities {
+  /* Kính mờ — chất liệu bề mặt xuyên suốt storefront */
+  .glass {
+    background: linear-gradient(
+      160deg,
+      rgba(255, 255, 255, 0.1),
+      rgba(255, 255, 255, 0.02)
+    );
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Viền gradient chạy sáng, xoay khi hover */
+  @property --angle {
+    syntax: "<angle>";
+    inherits: false;
+    initial-value: 0deg;
+  }
+
+  .glow-border {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .glow-border::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: conic-gradient(
+      from var(--angle),
+      var(--brand-primary),
+      var(--brand-secondary),
+      var(--brand-accent),
+      var(--brand-primary)
+    );
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    transition: --angle 0.6s ease;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .glow-border:hover::before {
+    --angle: 360deg;
+  }
+
+  /* Lớp nhiễu hạt phủ toàn trang — chi tiết khiến giao diện trông "đắt" */
+  .noise {
+    position: relative;
+  }
+
+  .noise::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    pointer-events: none;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
