@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
+import { Toaster } from "sonner";
 import { getSettings } from "@/lib/queries/settings";
 import { SmoothScroll } from "@/components/fx/SmoothScroll";
 import { AuroraBackground } from "@/components/fx/AuroraBackground";
@@ -54,6 +55,7 @@ export default async function RootLayout({
           <main className="pt-16">{children}</main>
           <Footer settings={settings} />
         </SmoothScroll>
+        <Toaster theme="dark" richColors position="bottom-right" />
       </body>
     </html>
   );

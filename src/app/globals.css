@@ -51,6 +51,52 @@
   --animate-aurora-1: aurora-drift-1 26s ease-in-out infinite;
   --animate-aurora-2: aurora-drift-2 32s ease-in-out infinite;
   --animate-aurora-3: aurora-drift-3 22s ease-in-out infinite;
+
+  /* Giày Hero bồng bềnh — mục 5.1 PLAN.md */
+  --animate-float: float 4s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(-12px);
+  }
+  50% {
+    transform: translateY(12px);
+  }
+}
+
+@keyframes marquee-x {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-row {
+  overflow: hidden;
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee-x 32s linear infinite;
+}
+
+.marquee-row:hover .marquee-track {
+  animation-duration: 70s;
+}
+
+.marquee-track-reverse {
+  animation-direction: reverse;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
 }
 
 @keyframes aurora-drift-1 {

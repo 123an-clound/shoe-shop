@@ -1,26 +1,45 @@
 import { getSettings } from "@/lib/queries/settings";
 import { getProducts } from "@/lib/queries/products";
-import { ProductGrid } from "@/components/product/ProductGrid";
+import { getCategories } from "@/lib/queries/categories";
+import { getTestimonials } from "@/lib/queries/testimonials";
+import { Hero } from "@/components/home/Hero";
+import { Marquee } from "@/components/home/Marquee";
+import { CategoryShowcase } from "@/components/home/CategoryShowcase";
+import { FeaturedGrid } from "@/components/home/FeaturedGrid";
+import { ScrollStory } from "@/components/home/ScrollStory";
+import { Stats } from "@/components/home/Stats";
+import { Testimonials } from "@/components/home/Testimonials";
+import { Newsletter } from "@/components/home/Newsletter";
 
 export default async function HomePage() {
-  const [settings, products] = await Promise.all([getSettings(), getProducts()]);
+  const [settings, products, categories, testimonials] = await Promise.all([
+    getSettings(),
+    getProducts(),
+    getCategories(),
+    getTestimonials(),
+  ]);
+
+  const heroImage = settings.hero_image_url ?? products[0]?.images[0] ?? null;
+  const storyImages = [products[0], products[1], products[2]].map((p) => ({
+    url: p?.images[0] ?? null,
+    alt: p?.name ?? "",
+  }));
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-      <div className="mx-auto flex max-w-3xl flex-col items-center gap-4 pb-16 text-center">
-        <h1 className="font-display text-4xl font-bold text-fg sm:text-5xl">
-          {settings.hero_headline ?? settings.store_name}
-        </h1>
-        {settings.hero_subheadline && (
-          <p className="max-w-xl text-fg-muted">{settings.hero_subheadline}</p>
-        )}
-        <p className="mt-2 text-sm text-fg-subtle">
-          Trang chủ đầy đủ (Hero, ScrollStory, Marquee…) sẽ được xây ở Phase 3.
-          Bên dưới là xem trước lưới sản phẩm của Phase 2.
-        </p>
-      </div>
-
-      <ProductGrid products={products} />
-    </div>
+    <>
+      <Hero
+        headline={settings.hero_headline ?? settings.store_name}
+        subheadline={settings.hero_subheadline}
+        imageUrl={heroImage}
+        imageAlt={products[0]?.name ?? settings.store_name}
+      />
+      <Marquee items={categories.map((c) => c.name.toUpperCase())} />
+      <CategoryShowcase categories={categories} />
+      <FeaturedGrid products={products} />
+      <ScrollStory storeName={settings.store_name} images={storyImages} />
+      <Stats products={products} />
+      <Testimonials testimonials={testimonials} />
+      <Newsletter />
+    </>
   );
 }
