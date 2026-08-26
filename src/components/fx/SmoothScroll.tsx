@@ -2,27 +2,8 @@
 
 import gsap from "gsap";
 import { ReactLenis } from "lenis/react";
-import { useEffect, useRef, useSyncExternalStore, type ReactNode } from "react";
-
-const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
-
-function subscribe(callback: () => void) {
-  const mql = window.matchMedia(REDUCED_MOTION_QUERY);
-  mql.addEventListener("change", callback);
-  return () => mql.removeEventListener("change", callback);
-}
-
-function getSnapshot() {
-  return window.matchMedia(REDUCED_MOTION_QUERY).matches;
-}
-
-function getServerSnapshot() {
-  return false;
-}
-
-function usePrefersReducedMotion() {
-  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-}
+import { useEffect, useRef, type ReactNode } from "react";
+import { usePrefersReducedMotion } from "@/lib/hooks/useMediaQuery";
 
 /**
  * Bọc toàn bộ storefront để cuộn mượt bằng Lenis, đồng bộ với GSAP ticker
