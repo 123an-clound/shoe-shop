@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { ShoppingBag } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/cn";
 import { MobileMenu } from "@/components/layout/MobileMenu";
+import { useCartHydrated, useCartStore } from "@/store/cart";
 
 const NAV_ITEMS = [
   { href: "/", label: "Trang chủ" },
@@ -15,6 +16,12 @@ const NAV_ITEMS = [
 
 export function Header({ storeName }: { storeName: string }) {
   const [scrolled, setScrolled] = useState(false);
+  const hydrated = useCartHydrated();
+  const itemCount = useCartStore((state) =>
+    state.items.reduce((sum, item) => sum + item.quantity, 0),
+  );
+  const [bounce, setBounce] = useState(false);
+  const prevCount = useRef(itemCount);
 
   useEffect(() => {
     function onScroll() {
@@ -24,6 +31,16 @@ export function Header({ storeName }: { storeName: string }) {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  useEffect(() => {
+    if (itemCount > prevCount.current) {
+      setBounce(true);
+      const timer = setTimeout(() => setBounce(false), 500);
+      prevCount.current = itemCount;
+      return () => clearTimeout(timer);
+    }
+    prevCount.current = itemCount;
+  }, [itemCount]);
 
   return (
     <header
@@ -54,11 +71,20 @@ export function Header({ storeName }: { storeName: string }) {
 
         <div className="flex items-center gap-2">
           <Link
+            id="header-cart-icon"
             href="/gio-hang"
-            aria-label="Giỏ hàng"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-fg transition-colors hover:bg-white/5"
+            aria-label={`Giỏ hàng${hydrated && itemCount > 0 ? `, ${itemCount} sản phẩm` : ""}`}
+            className="relative flex h-11 w-11 items-center justify-center rounded-full text-fg transition-colors hover:bg-white/5"
           >
-            <ShoppingBag className="h-5 w-5" aria-hidden="true" />
+            <ShoppingBag
+              className={cn("h-5 w-5", bounce && "animate-bounce")}
+              aria-hidden="true"
+            />
+            {hydrated && itemCount > 0 && (
+              <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-medium tabular-nums text-ink-950">
+                {itemCount}
+              </span>
+            )}
           </Link>
           <MobileMenu storeName={storeName} navItems={NAV_ITEMS} />
         </div>
