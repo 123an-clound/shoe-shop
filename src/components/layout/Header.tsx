@@ -20,6 +20,7 @@ export function Header({ storeName }: { storeName: string }) {
   const itemCount = useCartStore((state) =>
     state.items.reduce((sum, item) => sum + item.quantity, 0),
   );
+  const openCart = useCartStore((state) => state.openCart);
   const [bounce, setBounce] = useState(false);
   const prevCount = useRef(itemCount);
 
@@ -70,10 +71,11 @@ export function Header({ storeName }: { storeName: string }) {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Link
+          <button
             id="header-cart-icon"
-            href="/gio-hang"
-            aria-label={`Giỏ hàng${hydrated && itemCount > 0 ? `, ${itemCount} sản phẩm` : ""}`}
+            type="button"
+            onClick={openCart}
+            aria-label={`Mở giỏ hàng${hydrated && itemCount > 0 ? `, ${itemCount} sản phẩm` : ""}`}
             className="relative flex h-11 w-11 items-center justify-center rounded-full text-fg transition-colors hover:bg-white/5"
           >
             <ShoppingBag
@@ -85,7 +87,7 @@ export function Header({ storeName }: { storeName: string }) {
                 {itemCount}
               </span>
             )}
-          </Link>
+          </button>
           <MobileMenu storeName={storeName} navItems={NAV_ITEMS} />
         </div>
       </div>

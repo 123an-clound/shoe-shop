@@ -54,6 +54,20 @@
 
   /* Giày Hero bồng bềnh — mục 5.1 PLAN.md */
   --animate-float: float 4s ease-in-out infinite;
+
+  /* Confetti màn hình đặt hàng thành công — mục 5.5 PLAN.md */
+  --animate-confetti-fall: confetti-fall 3s linear forwards;
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-10vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110vh) rotate(360deg);
+    opacity: 0.8;
+  }
 }
 
 @keyframes float {

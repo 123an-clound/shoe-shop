@@ -39,6 +39,9 @@ yarn-error.log*
 # cache tải ảnh Unsplash (scripts/upload-images.mjs)
 .cache/
 
+# ảnh chụp/log khi kiểm thử bằng Playwright MCP
+.playwright-mcp/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

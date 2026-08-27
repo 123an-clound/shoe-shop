@@ -17,6 +17,7 @@ export type CartItem = {
 
 type CartState = {
   items: CartItem[];
+  isOpen: boolean;
   addItem: (item: CartItem) => void;
   removeItem: (productId: string, size: number, color: string) => void;
   updateQuantity: (
@@ -26,6 +27,8 @@ type CartState = {
     quantity: number,
   ) => void;
   clear: () => void;
+  openCart: () => void;
+  closeCart: () => void;
 };
 
 function sameLine(a: CartItem, productId: string, size: number, color: string) {
@@ -36,6 +39,7 @@ export const useCartStore = create<CartState>()(
   persist(
     (set) => ({
       items: [],
+      isOpen: false,
 
       addItem: (item) =>
         set((state) => {
@@ -65,8 +69,14 @@ export const useCartStore = create<CartState>()(
         })),
 
       clear: () => set({ items: [] }),
+      openCart: () => set({ isOpen: true }),
+      closeCart: () => set({ isOpen: false }),
     }),
-    { name: "veloce-cart" },
+    {
+      name: "veloce-cart",
+      // Chỉ lưu danh sách sản phẩm — isOpen là state UI tạm thời, không cần persist.
+      partialize: (state) => ({ items: state.items }),
+    },
   ),
 );
 

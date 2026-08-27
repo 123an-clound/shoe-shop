@@ -7,6 +7,7 @@ import { AuroraBackground } from "@/components/fx/AuroraBackground";
 import { NoiseOverlay } from "@/components/fx/NoiseOverlay";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { CartDrawer } from "@/components/layout/CartDrawer";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -55,6 +56,7 @@ export default async function RootLayout({
           <main className="pt-16">{children}</main>
           <Footer settings={settings} />
         </SmoothScroll>
+        <CartDrawer freeshipThreshold={settings.freeship_threshold} />
         <Toaster theme="dark" richColors position="bottom-right" />
       </body>
     </html>
