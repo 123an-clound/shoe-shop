@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: PageProps<"/san-pham/[slug]">
   if (!product) return {};
 
   return {
-    title: `${product.name} — ${product.brand}`,
+    title: product.name,
     description: product.description,
     openGraph: product.images[0] ? { images: [product.images[0]] } : undefined,
   };

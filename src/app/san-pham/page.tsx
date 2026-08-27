@@ -7,7 +7,7 @@ import { ProductListing } from "@/components/product/ProductListing";
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSettings();
   return {
-    title: `Sản phẩm — ${settings.store_name}`,
+    title: "Sản phẩm",
     description: `Toàn bộ giày nam đang bán tại ${settings.store_name}.`,
   };
 }

@@ -8,7 +8,12 @@ import { usePrefersReducedMotion } from "@/lib/hooks/useMediaQuery";
 type StoryImage = { url: string | null; alt: string };
 type StoryBlock = { heading: string; body: string };
 
-/** GSAP ScrollTrigger pin + scrub: giày đứng yên, 3 khối chữ trôi qua (mục 5.1 PLAN.md). */
+/**
+ * Giày đứng yên (CSS `position: sticky`, không dùng GSAP `pin`), 3 khối chữ
+ * trôi qua theo tiến độ cuộn (mục 5.1 PLAN.md). GSAP `pin: true` từng gây lỗi
+ * "removeChild" khi rời trang chủ vì nó bọc/di chuyển DOM node ngoài tầm kiểm
+ * soát của React — sticky đạt hiệu ứng tương tự mà không đụng vào cây DOM.
+ */
 export function ScrollStory({
   storeName,
   images,
@@ -16,7 +21,7 @@ export function ScrollStory({
   storeName: string;
   images: StoryImage[];
 }) {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
   const reducedMotion = usePrefersReducedMotion();
 
   const blocks: StoryBlock[] = [
@@ -35,11 +40,11 @@ export function ScrollStory({
   ];
 
   useEffect(() => {
-    if (reducedMotion || !containerRef.current) return;
+    if (reducedMotion || !sectionRef.current) return;
 
     const ctx = gsap.context(() => {
-      const textEls = gsap.utils.toArray<HTMLElement>(".story-text", containerRef.current!);
-      const imageEls = gsap.utils.toArray<HTMLElement>(".story-image", containerRef.current!);
+      const textEls = gsap.utils.toArray<HTMLElement>(".story-text", sectionRef.current!);
+      const imageEls = gsap.utils.toArray<HTMLElement>(".story-image", sectionRef.current!);
 
       gsap.set(textEls, { opacity: 0, y: 40 });
       gsap.set(textEls[0], { opacity: 1, y: 0 });
@@ -48,11 +53,10 @@ export function ScrollStory({
 
       const timeline = gsap.timeline({
         scrollTrigger: {
-          trigger: containerRef.current,
+          trigger: sectionRef.current,
           start: "top top",
-          end: `+=${window.innerHeight * 2}`,
+          end: "bottom bottom",
           scrub: 1,
-          pin: true,
         },
       });
 
@@ -63,7 +67,7 @@ export function ScrollStory({
           .to(imageEls[i], { opacity: 0, rotate: -8, duration: 0.3 }, i)
           .to(imageEls[i + 1], { opacity: 1, rotate: 0, duration: 0.3 }, i + 0.1);
       }
-    }, containerRef);
+    }, sectionRef);
 
     return () => ctx.revert();
   }, [reducedMotion]);
@@ -98,30 +102,32 @@ export function ScrollStory({
   }
 
   return (
-    <section ref={containerRef} className="relative h-screen overflow-hidden">
-      <div className="mx-auto grid h-full max-w-6xl grid-cols-1 items-center gap-8 px-4 sm:px-6 md:grid-cols-2 lg:px-8">
-        <div className="relative order-2 aspect-square md:order-1">
-          {images.map((img, i) => (
-            <div
-              key={i}
-              className="story-image absolute inset-0 overflow-hidden rounded-[var(--radius-card)] bg-ink-800"
-            >
-              {img.url && (
-                <Image src={img.url} alt={img.alt} fill className="object-cover" />
-              )}
-            </div>
-          ))}
-        </div>
+    <section ref={sectionRef} className="relative" style={{ height: "300vh" }}>
+      <div className="sticky top-16 flex h-screen items-center overflow-hidden">
+        <div className="mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-8 px-4 sm:px-6 md:grid-cols-2 lg:px-8">
+          <div className="relative order-2 aspect-square md:order-1">
+            {images.map((img, i) => (
+              <div
+                key={i}
+                className="story-image absolute inset-0 overflow-hidden rounded-[var(--radius-card)] bg-ink-800"
+              >
+                {img.url && (
+                  <Image src={img.url} alt={img.alt} fill className="object-cover" />
+                )}
+              </div>
+            ))}
+          </div>
 
-        <div className="relative order-1 h-40 md:order-2 md:h-48">
-          {blocks.map((block) => (
-            <div key={block.heading} className="story-text absolute inset-0">
-              <h3 className="font-display text-2xl font-bold text-fg sm:text-3xl">
-                {block.heading}
-              </h3>
-              <p className="mt-3 max-w-md text-fg-muted">{block.body}</p>
-            </div>
-          ))}
+          <div className="relative order-1 h-40 md:order-2 md:h-48">
+            {blocks.map((block) => (
+              <div key={block.heading} className="story-text absolute inset-0">
+                <h3 className="font-display text-2xl font-bold text-fg sm:text-3xl">
+                  {block.heading}
+                </h3>
+                <p className="mt-3 max-w-md text-fg-muted">{block.body}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

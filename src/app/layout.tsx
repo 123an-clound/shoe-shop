@@ -8,6 +8,8 @@ import { NoiseOverlay } from "@/components/fx/NoiseOverlay";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/layout/CartDrawer";
+import { PageTransition } from "@/components/fx/PageTransition";
+import { CustomCursor } from "@/components/fx/CustomCursor";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -25,7 +27,8 @@ const inter = Inter({
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSettings();
   return {
-    title: settings.store_name,
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+    title: { default: settings.store_name, template: `%s — ${settings.store_name}` },
     description: settings.slogan,
   };
 }
@@ -57,6 +60,8 @@ export default async function RootLayout({
           <Footer settings={settings} />
         </SmoothScroll>
         <CartDrawer freeshipThreshold={settings.freeship_threshold} />
+        <CustomCursor />
+        <PageTransition />
         <Toaster theme="dark" richColors position="bottom-right" />
       </body>
     </html>

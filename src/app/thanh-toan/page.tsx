@@ -1,11 +1,7 @@
 import type { Metadata } from "next";
-import { getSettings } from "@/lib/queries/settings";
 import { CheckoutForm } from "@/components/checkout/CheckoutForm";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const settings = await getSettings();
-  return { title: `Thanh toán — ${settings.store_name}` };
-}
+export const metadata: Metadata = { title: "Thanh toán" };
 
 export default function CheckoutPage() {
   return (
