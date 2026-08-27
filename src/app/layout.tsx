@@ -2,12 +2,6 @@ import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import { Toaster } from "sonner";
 import { getSettings } from "@/lib/queries/settings";
-import { SmoothScroll } from "@/components/fx/SmoothScroll";
-import { AuroraBackground } from "@/components/fx/AuroraBackground";
-import { NoiseOverlay } from "@/components/fx/NoiseOverlay";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
-import { CartDrawer } from "@/components/layout/CartDrawer";
 import { PageTransition } from "@/components/fx/PageTransition";
 import { CustomCursor } from "@/components/fx/CustomCursor";
 import "./globals.css";
@@ -33,6 +27,11 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+/**
+ * Layout gốc — chỉ những gì thật sự chung cho cả storefront lẫn /admin
+ * (font, nền tối, màu thương hiệu, toast). Header/Footer/hiệu ứng nặng nằm ở
+ * app/(storefront)/layout.tsx — /admin có layout riêng, không dùng chung.
+ */
 export default async function RootLayout({
   children,
 }: LayoutProps<"/">) {
@@ -52,14 +51,7 @@ export default async function RootLayout({
         />
       </head>
       <body className="min-h-full">
-        <SmoothScroll>
-          <NoiseOverlay />
-          <AuroraBackground />
-          <Header storeName={settings.store_name} />
-          <main className="pt-16">{children}</main>
-          <Footer settings={settings} />
-        </SmoothScroll>
-        <CartDrawer freeshipThreshold={settings.freeship_threshold} />
+        {children}
         <CustomCursor />
         <PageTransition />
         <Toaster theme="dark" richColors position="bottom-right" />
