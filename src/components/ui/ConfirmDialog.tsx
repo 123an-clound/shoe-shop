@@ -25,12 +25,32 @@ export function ConfirmDialog({
   const [value, setValue] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
 
     function onKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") handleClose();
+      if (e.key === "Escape") {
+        handleClose();
+        return;
+      }
+      if (e.key !== "Tab" || !dialogRef.current) return;
+
+      const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      );
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
@@ -59,7 +79,10 @@ export function ConfirmDialog({
   return (
     <div role="dialog" aria-modal="true" aria-label={title} className="fixed inset-0 z-[70]">
       <div className="absolute inset-0 bg-ink-950/80 backdrop-blur-sm" onClick={handleClose} />
-      <div className="glass absolute left-1/2 top-1/2 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-[var(--radius-card)] p-6">
+      <div
+        ref={dialogRef}
+        className="glass absolute left-1/2 top-1/2 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-[var(--radius-card)] p-6"
+      >
         <h2 className="font-display text-lg font-bold text-fg">{title}</h2>
         <p className="mt-2 text-sm text-fg-muted">{description}</p>
         <p className="mt-3 text-sm text-fg-muted">

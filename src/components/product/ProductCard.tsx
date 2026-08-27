@@ -86,7 +86,7 @@ export function ProductCard({ product }: { product: Product }) {
             <span>({product.review_count})</span>
           </div>
 
-          <div className="mt-2 flex items-baseline gap-2">
+          <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
             <span className="tabular-nums font-medium text-fg">
               {formatVND(product.price)}
             </span>
