@@ -100,7 +100,7 @@ export function Footer({ settings }: { settings: Settings }) {
         </div>
       </div>
 
-      <div className="border-t border-ink-700 px-4 py-6 text-center text-xs text-fg-subtle sm:px-6 lg:px-8">
+      <div className="border-t border-ink-700 px-4 py-6 text-center text-xs text-fg-muted sm:px-6 lg:px-8">
         © {year} {settings.store_name}. Đây là trang demo, không phát sinh
         giao dịch thật.
       </div>
