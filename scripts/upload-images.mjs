@@ -159,6 +159,7 @@ const frameAngle = async (src, slug) => {
   const shoe = await sharp(src)
     .resize({ width: Math.round(W * 0.9), height: Math.round(H * 0.58), fit: "inside" })
     .rotate(-9, { background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .resize({ width: W, height: H, fit: "inside" }) // xoay có thể làm khung ảnh lớn hơn nền, ép lại cho chắc
     .toBuffer();
   return sharp(backdrop(slug, { blobs: false }))
     .composite([{ input: shoe, gravity: "center" }])
