@@ -7,8 +7,9 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { useLocaleContext } from "@/components/i18n/LocaleProvider";
+import { submitContactMessage } from "@/lib/actions/publicForms";
 
-type ContactValues = { name: string; email: string; message: string };
+type ContactValues = { name: string; email: string; message: string; website?: string };
 
 export function ContactForm() {
   const { locale, messages } = useLocaleContext();
@@ -17,17 +18,26 @@ export function ContactForm() {
     name: z.string().min(2, locale === "en" ? "Enter your name" : "Nhập họ tên"),
     email: z.string().email(locale === "en" ? "Enter a valid email" : "Email không hợp lệ"),
     message: z.string().min(10, locale === "en" ? "Please write at least 10 characters" : "Nội dung cần ít nhất 10 ký tự"),
+    website: z.string().optional(),
   });
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<ContactValues>({ resolver: zodResolver(schema) });
 
   async function onSubmit(values: ContactValues) {
-    await new Promise((resolve) => setTimeout(resolve, 400));
-    toast.success(locale === "en" ? `Thanks ${values.name}, we'll be in touch soon.` : `Cảm ơn ${values.name}, chúng tôi sẽ phản hồi sớm nhất.`);
+    const result = await submitContactMessage({ ...values, locale });
+    if (!result.success) {
+      toast.error(copy.error);
+      return;
+    }
+    toast.success(copy.sent);
     reset();
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
+      <div aria-hidden="true" className="absolute -left-[10000px] h-px w-px overflow-hidden">
+        <label htmlFor="contact-website">Website</label>
+        <input id="contact-website" tabIndex={-1} autoComplete="off" {...register("website")} />
+      </div>
       <Input label={copy.name} error={errors.name?.message} {...register("name")} />
       <Input label={copy.email} type="email" error={errors.email?.message} {...register("email")} />
       <div className="flex flex-col gap-1.5">
@@ -35,6 +45,7 @@ export function ContactForm() {
         <textarea id="message" rows={5} className="rounded-lg border border-ink-700 bg-ink-900 px-4 py-3 text-sm text-fg placeholder:text-fg-subtle transition-colors focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30" aria-invalid={!!errors.message} {...register("message")} />
         {errors.message && <p className="text-xs text-red-400">{errors.message.message}</p>}
       </div>
+      <p className="text-xs text-fg-subtle">{copy.privacy}</p>
       <Button type="submit" disabled={isSubmitting} className="self-start">{isSubmitting ? copy.sending : copy.send}</Button>
     </form>
   );

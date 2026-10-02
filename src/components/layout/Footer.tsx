@@ -103,7 +103,7 @@ export function Footer({ settings, locale }: { settings: Settings; locale: Local
       </div>
 
       <div className="border-t border-ink-700 px-4 py-6 text-center text-xs text-fg-muted sm:px-6 lg:px-8">
-        © {year} {settings.store_name}. {messages.footer.demo}
+        © {year} {settings.store_name}. {messages.footer.cod}
       </div>
     </footer>
   );

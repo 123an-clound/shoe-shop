@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRef, useState } from "react";
-import { GripVertical, ImagePlus, X } from "lucide-react";
+import { ChevronDown, ChevronUp, GripVertical, ImagePlus, X } from "lucide-react";
 import { toast } from "sonner";
 import { uploadProductImage } from "@/lib/actions/products";
 import { cn } from "@/lib/cn";
@@ -42,17 +42,21 @@ export function ImageUploader({
     const newUrls: string[] = [];
     for (const [i, file] of filesToUpload.entries()) {
       const index = value.length + i + 1;
-      const ext = file.name.split(".").pop() || "jpg";
-      const path = `products/${slug}-${index}.${ext}`;
+      const ext = file.type === "image/jpeg" ? "jpg" : file.type === "image/png" ? "png" : "webp";
+      const path = `products/${slug}-${index}-${window.crypto.randomUUID()}.${ext}`;
       const formData = new FormData();
       formData.set("file", file);
       formData.set("path", path);
-      const result = await uploadProductImage(formData);
-      if (!result.success) {
-        toast.error(result.error);
-        continue;
+      try {
+        const result = await uploadProductImage(formData);
+        if (!result.success) {
+          toast.error(result.error);
+          continue;
+        }
+        newUrls.push(result.url);
+      } catch {
+        toast.error("Không kết nối được để tải ảnh lên. Hãy thử lại.");
       }
-      newUrls.push(result.url);
     }
     setUploading(false);
     if (newUrls.length > 0) onChange([...value, ...newUrls]);
@@ -60,6 +64,14 @@ export function ImageUploader({
 
   function removeAt(index: number) {
     onChange(value.filter((_, i) => i !== index));
+  }
+
+  function moveAt(index: number, direction: -1 | 1) {
+    const destination = index + direction;
+    if (destination < 0 || destination >= value.length) return;
+    const next = [...value];
+    [next[index], next[destination]] = [next[destination]!, next[index]!];
+    onChange(next);
   }
 
   function handleDropReorder(index: number) {
@@ -97,14 +109,17 @@ export function ImageUploader({
             <div className="absolute left-1 top-1 flex h-6 w-6 items-center justify-center rounded bg-ink-950/70 text-fg-subtle">
               <GripVertical className="h-3.5 w-3.5" aria-hidden="true" />
             </div>
-            <button
-              type="button"
-              onClick={() => removeAt(index)}
-              aria-label="Xóa ảnh"
-              className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-ink-950/70 text-fg opacity-0 transition-opacity group-hover:opacity-100"
-            >
-              <X className="h-3.5 w-3.5" aria-hidden="true" />
-            </button>
+            <div className="absolute right-1 top-1 flex gap-1">
+              <button type="button" onClick={() => moveAt(index, -1)} disabled={index === 0} aria-label={`Đưa ảnh ${index + 1} lên trước`} className="flex h-9 w-9 items-center justify-center rounded-full bg-ink-950/80 text-fg disabled:opacity-40">
+                <ChevronUp className="h-4 w-4" aria-hidden="true" />
+              </button>
+              <button type="button" onClick={() => moveAt(index, 1)} disabled={index === value.length - 1} aria-label={`Đưa ảnh ${index + 1} xuống sau`} className="flex h-9 w-9 items-center justify-center rounded-full bg-ink-950/80 text-fg disabled:opacity-40">
+                <ChevronDown className="h-4 w-4" aria-hidden="true" />
+              </button>
+              <button type="button" onClick={() => removeAt(index)} aria-label={`Xóa ảnh ${index + 1}`} className="flex h-9 w-9 items-center justify-center rounded-full bg-ink-950/80 text-fg hover:text-red-400">
+                <X className="h-4 w-4" aria-hidden="true" />
+              </button>
+            </div>
           </div>
         ))}
 
@@ -123,7 +138,7 @@ export function ImageUploader({
       <input
         ref={inputRef}
         type="file"
-        accept="image/*"
+        accept="image/png,image/jpeg,image/webp"
         multiple
         className="hidden"
         onChange={(e) => handleFiles(e.target.files)}

@@ -24,6 +24,7 @@ export function ProductsTable({
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<AdminProduct | null>(null);
+  const [busyProductId, setBusyProductId] = useState<string | null>(null);
 
   const categoryMap = useMemo(
     () => new Map(categories.map((c) => [c.id, c.name])),
@@ -37,25 +38,42 @@ export function ProductsTable({
   });
 
   async function handleTogglePublish(product: AdminProduct) {
-    const result = await toggleProductPublish(product.id, !product.is_published);
-    if (!result.success) {
-      toast.error(result.error);
-      return;
+    if (busyProductId) return;
+    setBusyProductId(product.id);
+    try {
+      const result = await toggleProductPublish(product.id, !product.is_published);
+      if (!result.success) {
+        toast.error(result.error);
+        return;
+      }
+      toast.success(product.is_published ? "Đã ẩn sản phẩm" : "Đã publish sản phẩm");
+      router.refresh();
+    } catch {
+      toast.error("Không kết nối được. Trạng thái sản phẩm chưa được xác nhận.");
+      router.refresh();
+    } finally {
+      setBusyProductId(null);
     }
-    toast.success(product.is_published ? "Đã ẩn sản phẩm" : "Đã publish sản phẩm");
-    router.refresh();
   }
 
   async function handleDelete() {
-    if (!deleteTarget) return;
-    const result = await deleteProduct(deleteTarget.id);
-    if (!result.success) {
-      toast.error(result.error);
-      return;
+    if (!deleteTarget || busyProductId) return;
+    setBusyProductId(deleteTarget.id);
+    try {
+      const result = await deleteProduct(deleteTarget.id, deleteTarget.updated_at);
+      if (!result.success) {
+        toast.error(result.error);
+        return;
+      }
+      toast.success("Đã xóa sản phẩm");
+      setDeleteTarget(null);
+      router.refresh();
+    } catch {
+      toast.error("Không kết nối được. Chưa thể xác nhận việc xóa sản phẩm.");
+      router.refresh();
+    } finally {
+      setBusyProductId(null);
     }
-    toast.success("Đã xóa sản phẩm");
-    setDeleteTarget(null);
-    router.refresh();
   }
 
   return (
@@ -121,16 +139,17 @@ export function ProductsTable({
                     type="button"
                     onClick={() => handleTogglePublish(product)}
                     aria-pressed={product.is_published}
-                    aria-label="Bật/tắt publish"
+                    aria-label={`${product.is_published ? "Tắt" : "Bật"} hiển thị ${product.name}`}
+                    disabled={busyProductId !== null}
                     className={cn(
-                      "h-6 w-11 rounded-full transition-colors",
+                      "h-9 w-12 rounded-full p-1 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand disabled:cursor-wait disabled:opacity-60",
                       product.is_published ? "bg-brand" : "bg-ink-700",
                     )}
                   >
                     <span
                       className={cn(
-                        "block h-5 w-5 rounded-full bg-fg transition-transform",
-                        product.is_published ? "translate-x-5" : "translate-x-0.5",
+                        "block h-7 w-7 rounded-full bg-fg transition-transform",
+                        product.is_published ? "translate-x-4" : "translate-x-0",
                       )}
                     />
                   </button>
@@ -166,7 +185,7 @@ export function ProductsTable({
       <ConfirmDialog
         open={!!deleteTarget}
         title="Xóa sản phẩm"
-        description="Hành động này không thể hoàn tác. Ảnh trên Storage cũng sẽ bị xóa."
+        description="Sản phẩm sẽ bị xóa khỏi cửa hàng. Tệp ảnh được giữ lại để tránh làm hỏng nội dung khác đang dùng chung ảnh."
         expectedText={deleteTarget?.name ?? ""}
         onConfirm={handleDelete}
         onClose={() => setDeleteTarget(null)}

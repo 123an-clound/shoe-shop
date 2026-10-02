@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   LogOut,
+  Mail,
   Package,
   Settings,
   ShoppingCart,
@@ -13,12 +14,14 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { signOutAdmin } from "@/lib/actions/auth";
+import { toast } from "sonner";
 
 const NAV_ITEMS = [
   { href: "/admin", label: "Bảng điều khiển", icon: LayoutDashboard },
   { href: "/admin/san-pham", label: "Sản phẩm", icon: Package },
   { href: "/admin/danh-muc", label: "Danh mục", icon: Tag },
   { href: "/admin/don-hang", label: "Đơn hàng", icon: ShoppingCart },
+  { href: "/admin/hop-thu", label: "Hộp thư", icon: Mail },
   { href: "/admin/danh-gia", label: "Đánh giá", icon: Star },
   { href: "/admin/cai-dat", label: "Cài đặt", icon: Settings },
 ];
@@ -34,9 +37,13 @@ export function AdminSidebar({
   const router = useRouter();
 
   async function handleLogout() {
-    await signOutAdmin();
-    router.push("/admin/dang-nhap");
-    router.refresh();
+    try {
+      await signOutAdmin();
+      router.push("/admin/dang-nhap");
+      router.refresh();
+    } catch {
+      toast.error("Không thể đăng xuất do lỗi kết nối. Hãy thử lại.");
+    }
   }
 
   return (
@@ -48,13 +55,15 @@ export function AdminSidebar({
 
       <nav aria-label="Điều hướng quản trị" className="mt-2 flex gap-1 overflow-x-auto pb-1 md:mt-4 md:flex-1 md:flex-col md:gap-1 md:overflow-visible md:pb-0">
         {NAV_ITEMS.map((item) => {
-          const active =
-            item.href === "/admin" ? pathname === "/admin" : pathname?.startsWith(item.href);
+          const active = item.href === "/admin"
+            ? pathname === "/admin"
+            : pathname === item.href || pathname?.startsWith(`${item.href}/`);
           const Icon = item.icon;
           return (
             <Link
               key={item.href}
               href={item.href}
+              aria-current={active ? "page" : undefined}
               className={cn(
                 "relative flex shrink-0 items-center gap-2 rounded-lg px-3 py-2.5 text-xs transition-colors sm:text-sm md:gap-3",
                 active

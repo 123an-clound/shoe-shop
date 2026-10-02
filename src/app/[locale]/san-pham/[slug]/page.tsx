@@ -29,7 +29,14 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: L
     title: name,
     description,
     alternates: localizedAlternates(locale, viPath, enPath),
-    openGraph: product.images[0] ? { images: [product.images[0]] } : undefined,
+    openGraph: {
+      title: name,
+      description,
+      locale: locale === "en" ? "en_US" : "vi_VN",
+      type: "website",
+      images: product.images[0] ? [product.images[0]] : undefined,
+    },
+    twitter: { card: "summary_large_image", title: name, description },
   };
 }
 
@@ -58,9 +65,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       availability: product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
       itemCondition: "https://schema.org/NewCondition",
     },
-    ...(product.review_count > 0 && product.rating > 0
-      ? { aggregateRating: { "@type": "AggregateRating", ratingValue: product.rating, reviewCount: product.review_count } }
-      : {}),
   };
 
   const related = product.category_id

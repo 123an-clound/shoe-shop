@@ -408,6 +408,7 @@ export type Database = {
           name_en: string | null
           slug: string
           sort_order: number
+          updated_at: string
         }
         Insert: {
           created_at?: string
@@ -419,6 +420,7 @@ export type Database = {
           name_en?: string | null
           slug: string
           sort_order?: number
+          updated_at?: string
         }
         Update: {
           created_at?: string
@@ -430,6 +432,43 @@ export type Database = {
           name_en?: string | null
           slug?: string
           sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      veloce_contact_messages: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          locale: string
+          message: string
+          name: string
+          phone: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          locale: string
+          message: string
+          name: string
+          phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          locale?: string
+          message?: string
+          name?: string
+          phone?: string | null
+          status?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -576,6 +615,33 @@ export type Database = {
           },
         ]
       }
+      veloce_newsletter_subscribers: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          locale: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          locale: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          locale?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       veloce_settings: {
         Row: {
           address: string | null
@@ -709,6 +775,7 @@ export type Database = {
           role: string | null
           role_en: string | null
           sort_order: number
+          updated_at: string
         }
         Insert: {
           avatar_url?: string | null
@@ -722,6 +789,7 @@ export type Database = {
           role?: string | null
           role_en?: string | null
           sort_order?: number
+          updated_at?: string
         }
         Update: {
           avatar_url?: string | null
@@ -735,6 +803,7 @@ export type Database = {
           role?: string | null
           role_en?: string | null
           sort_order?: number
+          updated_at?: string
         }
         Relationships: []
       }
@@ -1080,6 +1149,12 @@ export type Database = {
         }
       }
       veloce_cancel_order: { Args: { p_order_id: string }; Returns: undefined }
+      veloce_admin_revenue_last_30_days: { Args: Record<PropertyKey, never>; Returns: number }
+      veloce_submit_contact_message: {
+        Args: { p_email: string; p_locale: string; p_message: string; p_name: string; p_phone?: string | null }
+        Returns: undefined
+      }
+      veloce_subscribe_newsletter: { Args: { p_email: string; p_locale: string }; Returns: undefined }
       veloce_place_order: {
         Args: {
           p_address: string
@@ -1093,6 +1168,23 @@ export type Database = {
         Returns: {
           order_code: string
           order_id: string
+          order_total: number
+        }[]
+      }
+      veloce_place_order_idempotent: {
+        Args: {
+          p_idempotency_key: string
+          p_customer_name: string
+          p_customer_phone: string
+          p_address: string
+          p_items: Json
+          p_customer_email?: string
+          p_note?: string
+          p_coupon_code?: string
+        }
+        Returns: {
+          order_id: string
+          order_code: string
           order_total: number
         }[]
       }

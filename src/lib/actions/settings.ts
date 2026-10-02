@@ -3,19 +3,24 @@
 import { revalidatePath, updateTag } from "next/cache";
 import { requireAdmin, actionErrorMessage } from "@/lib/auth/requireAdmin";
 import { settingsFormSchema } from "@/lib/validation/settings";
+import { validateUploadedImage } from "@/lib/validation/image";
+import { z } from "zod";
 import type { ActionResult } from "@/lib/actions/products";
 import type { UploadImageResult } from "@/lib/actions/products";
 
-export async function updateSettings(input: unknown): Promise<ActionResult> {
+export async function updateSettings(input: unknown, expectedUpdatedAt: string): Promise<ActionResult> {
   try {
     const { supabase } = await requireAdmin();
+    if (!z.string().datetime({ offset: true }).safeParse(expectedUpdatedAt).success) {
+      throw new Error("Phiên bản cấu hình không hợp lệ. Hãy tải lại trang.");
+    }
     const parsed = settingsFormSchema.safeParse(input);
     if (!parsed.success) {
       throw new Error(parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ.");
     }
     const data = parsed.data;
 
-    const { error } = await supabase
+    const { data: updated, error } = await supabase
       .from("veloce_settings")
       .update({
         store_name: data.storeName,
@@ -52,9 +57,13 @@ export async function updateSettings(input: unknown): Promise<ActionResult> {
         freeship_threshold: data.freeshipThreshold,
         shipping_fee: data.shippingFee,
       })
-      .eq("id", 1);
+      .eq("id", 1)
+      .eq("updated_at", expectedUpdatedAt)
+      .select("id")
+      .maybeSingle();
 
     if (error) throw new Error(error.message);
+    if (!updated) throw new Error("Cấu hình đã được người khác thay đổi. Tải lại để xem và áp dụng thay đổi mới nhất.");
 
     // Tên cửa hàng + màu ảnh hưởng toàn site — làm mới cache + toàn bộ layout gốc (mục 4.9 PLAN.md).
     updateTag("settings");
@@ -72,16 +81,15 @@ export async function uploadSettingsImage(formData: FormData): Promise<UploadIma
 
     const file = formData.get("file");
     const path = formData.get("path");
-    if (!(file instanceof File) || typeof path !== "string" || !/^branding\/(logo|hero)\.(png|jpg|webp)$/.test(path)) {
+    if (!(file instanceof File) || typeof path !== "string" || !/^branding\/(logo|hero)-[a-f0-9-]{36}\.(png|jpg|webp)$/.test(path)) {
       throw new Error("Thiếu dữ liệu ảnh.");
     }
-    if (file.size > 5 * 1024 * 1024 || !["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
-      throw new Error("Ảnh phải là PNG, JPG hoặc WebP và nhỏ hơn 5 MB.");
-    }
+    const validationError = await validateUploadedImage(file, path);
+    if (validationError) throw new Error(validationError);
 
     const { error } = await supabase.storage
       .from("veloce")
-      .upload(path, file, { upsert: true, contentType: file.type });
+      .upload(path, file, { contentType: file.type });
     if (error) throw new Error(error.message);
 
     const { data } = supabase.storage.from("veloce").getPublicUrl(path);

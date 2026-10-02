@@ -57,7 +57,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
     categories: <CategoryShowcase categories={categories} locale={locale} />,
     featured: <FeaturedGrid products={products} locale={locale} />,
     story: <ScrollStory storeName={settings.store_name} images={storyImages} locale={locale} />,
-    stats: <Stats products={products} locale={locale} />,
+    stats: <Stats products={products} categoryCount={categories.length} locale={locale} />,
     testimonials: <Testimonials testimonials={testimonials} locale={locale} />,
     newsletter: <Newsletter locale={locale} />,
   };

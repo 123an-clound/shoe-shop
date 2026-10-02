@@ -27,8 +27,15 @@ function CategoryRow({
 
   async function handleSave() {
     setSaving(true);
-    const result = await updateCategory(category.id, { name, name_en: nameEn, slug });
-    setSaving(false);
+    let result;
+    try {
+      result = await updateCategory(category.id, category.updated_at, { name, name_en: nameEn, slug });
+    } catch {
+      toast.error("Không kết nối được để lưu danh mục. Nội dung bạn nhập vẫn được giữ lại.");
+      return;
+    } finally {
+      setSaving(false);
+    }
     if (!result.success) {
       toast.error(result.error);
       return;
@@ -69,8 +76,15 @@ export function CategoriesManager({ categories }: { categories: Category[] }) {
   async function handleCreate() {
     if (!newName.trim()) return;
     setCreating(true);
-    const result = await createCategory({ name: newName, name_en: newNameEn, slug: slugify(newName) });
-    setCreating(false);
+    let result;
+    try {
+      result = await createCategory({ name: newName, name_en: newNameEn, slug: slugify(newName) });
+    } catch {
+      toast.error("Không kết nối được để tạo danh mục. Nội dung bạn nhập vẫn được giữ lại.");
+      return;
+    } finally {
+      setCreating(false);
+    }
     if (!result.success) {
       toast.error(result.error);
       return;
@@ -83,7 +97,13 @@ export function CategoriesManager({ categories }: { categories: Category[] }) {
 
   async function handleDelete() {
     if (!deleteTarget) return;
-    const result = await deleteCategory(deleteTarget.id);
+    let result;
+    try {
+      result = await deleteCategory(deleteTarget.id, deleteTarget.updated_at);
+    } catch {
+      toast.error("Không kết nối được để xóa danh mục. Hãy thử lại.");
+      return;
+    }
     if (!result.success) {
       toast.error(result.error);
       return;

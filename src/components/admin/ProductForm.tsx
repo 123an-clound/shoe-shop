@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/Button";
@@ -71,18 +71,29 @@ export function ProductForm({
 
   const {
     handleSubmit,
-    watch,
     setValue,
     formState: { errors, isSubmitting },
   } = form;
 
-  const slug = watch("slug");
-  const images = watch("images");
+  const slug = useWatch({ control: form.control, name: "slug" });
+  const images = useWatch({ control: form.control, name: "images" });
+  const featuresEn = useWatch({ control: form.control, name: "featuresEn" });
 
   async function onSubmit(values: ProductFormValues) {
-    const result = product
-      ? await updateProduct(product.id, values)
-      : await createProduct(values);
+    if (product && product.slug !== values.slug) {
+      const confirmed = window.confirm(`Slug thay đổi từ "${product.slug}" sang "${values.slug}" sẽ thay URL sản phẩm. Link cũ có thể không còn truy cập được. Bạn muốn tiếp tục?`);
+      if (!confirmed) return;
+    }
+
+    let result;
+    try {
+      result = product
+        ? await updateProduct(product.id, product.updated_at, values)
+        : await createProduct(values);
+    } catch {
+      toast.error("Không kết nối được để lưu sản phẩm. Dữ liệu trên form vẫn được giữ lại.");
+      return;
+    }
 
     if (!result.success) {
       toast.error(result.error);
@@ -106,7 +117,7 @@ export function ProductForm({
       <ProductFeaturesField form={form} />
       <div className="flex flex-col gap-2">
         <label className="text-sm text-fg-muted">Features (English, one per line)</label>
-        <textarea rows={4} value={watch("featuresEn").join("\n")} onChange={(event) => setValue("featuresEn", event.target.value.split("\n").filter(Boolean), { shouldDirty: true })} className="w-full rounded-lg border border-ink-700 bg-ink-900 px-4 py-3 text-sm text-fg focus:border-brand focus:outline-none" />
+        <textarea rows={4} value={featuresEn.join("\n")} onChange={(event) => setValue("featuresEn", event.target.value.split("\n").filter(Boolean), { shouldDirty: true })} className="w-full rounded-lg border border-ink-700 bg-ink-900 px-4 py-3 text-sm text-fg focus:border-brand focus:outline-none" />
       </div>
       <ProductSizesField form={form} />
       <ProductColorsField form={form} />

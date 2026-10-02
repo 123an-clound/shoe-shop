@@ -41,9 +41,15 @@ export function TestimonialForm({
   });
 
   async function onSubmit(values: TestimonialFormValues) {
-    const result = testimonial
-      ? await updateTestimonial(testimonial.id, values)
-      : await createTestimonial(values);
+    let result;
+    try {
+      result = testimonial
+        ? await updateTestimonial(testimonial.id, testimonial.updated_at, values)
+        : await createTestimonial(values);
+    } catch {
+      toast.error("Không kết nối được. Nội dung chưa được lưu.");
+      return;
+    }
 
     if (!result.success) {
       toast.error(result.error);

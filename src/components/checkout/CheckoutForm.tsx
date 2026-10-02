@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type MouseEvent } from "react";
+import { useRef, useState, type FormEvent, type MouseEvent } from "react";
 import { useRouter } from "next/navigation";
 import { LocaleLink } from "@/components/i18n/LocaleLink";
 import { useForm } from "react-hook-form";
@@ -31,6 +31,8 @@ export function CheckoutForm() {
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+  const submittingRef = useRef(false);
+  const fallbackIdempotencyKey = useRef<string | null>(null);
   const steps = [...copy.steps];
 
   const {
@@ -59,25 +61,45 @@ export function CheckoutForm() {
   }
 
   async function onSubmit(values: CheckoutFormValues) {
+    if (submittingRef.current) return;
     if (items.length === 0) {
       setServerError(copy.errorEmpty);
       return;
     }
 
+    submittingRef.current = true;
     setSubmitting(true);
     setServerError(null);
 
-    const result = await placeOrder({
-      ...values,
-      items: items.map((item) => ({
-        productId: item.productId,
-        size: item.size,
-        color: item.color,
-        quantity: item.quantity,
-      })),
-    });
+    let result;
+    let idempotencyKey: string;
+    try {
+      try {
+        idempotencyKey = window.sessionStorage.getItem("veloce-checkout-key") || window.crypto.randomUUID();
+        window.sessionStorage.setItem("veloce-checkout-key", idempotencyKey);
+      } catch {
+        idempotencyKey = fallbackIdempotencyKey.current || window.crypto.randomUUID();
+        fallbackIdempotencyKey.current = idempotencyKey;
+      }
 
-    setSubmitting(false);
+      result = await placeOrder({
+        ...values,
+        idempotencyKey,
+        items: items.map((item) => ({
+          productId: item.productId,
+          size: item.size,
+          color: item.color,
+          quantity: item.quantity,
+        })),
+      });
+    } catch {
+      setServerError(copy.errorRetry);
+      toast.error(copy.errorRetry);
+      return;
+    } finally {
+      submittingRef.current = false;
+      setSubmitting(false);
+    }
 
     if (!result.success) {
       // Lỗi từ RPC đã là tiếng Việt viết sẵn cho người dùng — hiện nguyên văn lên toast (mục 4.8 PLAN.md).
@@ -86,10 +108,20 @@ export function CheckoutForm() {
       return;
     }
 
+    try {
+      window.sessionStorage.removeItem("veloce-checkout-key");
+    } catch {
+      fallbackIdempotencyKey.current = null;
+    }
     clearCart();
     router.push(
       localizedHref(`/thanh-toan/thanh-cong?ma=${encodeURIComponent(result.orderCode)}&tong=${result.orderTotal}`, locale),
     );
+  }
+
+  async function onFormSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    await handleSubmit(onSubmit)(event);
   }
 
   if (items.length === 0) {
@@ -102,7 +134,7 @@ export function CheckoutForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="mx-auto max-w-xl">
+    <form onSubmit={onFormSubmit} noValidate className="mx-auto max-w-xl">
       <CheckoutSteps steps={steps} current={step} />
 
       {step === 0 && (
@@ -147,7 +179,13 @@ export function CheckoutForm() {
       )}
 
       {step === 2 && (
-        <CheckoutSummary items={items} subtotal={subtotalEstimate} error={serverError} />
+        <>
+          <div className="mb-5 rounded-xl border border-brand/30 bg-brand/10 p-4">
+            <p className="font-semibold text-fg">{copy.paymentTitle}</p>
+            <p className="mt-1 text-sm text-fg-muted">{copy.paymentBody}</p>
+          </div>
+          <CheckoutSummary items={items} subtotal={subtotalEstimate} error={serverError} />
+        </>
       )}
 
       <div className="mt-8 flex items-center justify-between gap-4">

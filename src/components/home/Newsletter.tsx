@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Reveal } from "@/components/ui/Reveal";
 import type { Locale } from "@/lib/i18n/messages";
 import { getMessages } from "@/lib/i18n/messages";
+import { subscribeToNewsletter } from "@/lib/actions/publicForms";
 
 type NewsletterValues = { email: string };
 
@@ -18,8 +19,12 @@ export function Newsletter({ locale = "vi" }: { locale?: Locale }) {
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<NewsletterValues>({ resolver: zodResolver(schema) });
 
   async function onSubmit(values: NewsletterValues) {
-    await new Promise((resolve) => setTimeout(resolve, 400));
-    toast.success(locale === "en" ? `Signed up with ${values.email}` : `Đã đăng ký nhận tin với ${values.email}`);
+    const result = await subscribeToNewsletter({ ...values, locale });
+    if (!result.success) {
+      toast.error(copy.submitError);
+      return;
+    }
+    toast.success(copy.subscribed);
     reset();
   }
 
@@ -34,6 +39,7 @@ export function Newsletter({ locale = "vi" }: { locale?: Locale }) {
               <div className="w-full flex-1"><Input type="email" placeholder="you@example.com" aria-label={copy.email} error={errors.email?.message} {...register("email")} /></div>
               <Button type="submit" disabled={isSubmitting}>{isSubmitting ? (locale === "en" ? "Signing up..." : "Đang đăng ký...") : copy.subscribe}</Button>
             </form>
+            <p className="mt-3 text-xs text-fg-subtle">{copy.newsletterPrivacy}</p>
           </div>
         </div>
       </Reveal>

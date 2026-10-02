@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/Input";
@@ -17,7 +17,7 @@ export function SettingsForm({ settings }: { settings: Settings }) {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     setValue,
     formState: { errors, isSubmitting },
   } = useForm<SettingsFormValues>({
@@ -59,16 +59,22 @@ export function SettingsForm({ settings }: { settings: Settings }) {
     },
   });
 
-  const colorPrimary = watch("colorPrimary");
-  const colorSecondary = watch("colorSecondary");
-  const colorAccent = watch("colorAccent");
-  const logoUrl = watch("logoUrl");
-  const heroImageUrl = watch("heroImageUrl");
-  const homepageSections = watch("homepageSections");
+  const colorPrimary = useWatch({ control, name: "colorPrimary" });
+  const colorSecondary = useWatch({ control, name: "colorSecondary" });
+  const colorAccent = useWatch({ control, name: "colorAccent" });
+  const logoUrl = useWatch({ control, name: "logoUrl" });
+  const heroImageUrl = useWatch({ control, name: "heroImageUrl" });
+  const homepageSections = useWatch({ control, name: "homepageSections" });
   const sectionOptions = [["hero", "Hero"], ["marquee", "Dải danh mục"], ["categories", "Danh mục"], ["featured", "Sản phẩm nổi bật"], ["story", "Câu chuyện thương hiệu"], ["stats", "Thống kê"], ["testimonials", "Đánh giá khách hàng"], ["newsletter", "Đăng ký nhận tin"]] as const;
 
   async function onSubmit(values: SettingsFormValues) {
-    const result = await updateSettings(values);
+    let result;
+    try {
+      result = await updateSettings(values, settings.updated_at);
+    } catch {
+      toast.error("Không kết nối được để lưu cài đặt. Dữ liệu trên form vẫn được giữ lại.");
+      return;
+    }
     if (!result.success) {
       toast.error(result.error);
       return;
@@ -105,13 +111,13 @@ export function SettingsForm({ settings }: { settings: Settings }) {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <BrandingImageField
             label="Logo"
-            path="branding/logo.png"
+            path="branding/logo"
             value={logoUrl ?? ""}
             onChange={(url) => setValue("logoUrl", url)}
           />
           <BrandingImageField
             label="Ảnh Hero"
-            path="branding/hero.jpg"
+            path="branding/hero"
             value={heroImageUrl ?? ""}
             onChange={(url) => setValue("heroImageUrl", url)}
           />

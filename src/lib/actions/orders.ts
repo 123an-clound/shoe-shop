@@ -23,7 +23,8 @@ export async function placeOrder(input: unknown): Promise<PlaceOrderResult> {
   }
 
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("veloce_place_order", {
+  const { data, error } = await supabase.rpc("veloce_place_order_idempotent", {
+    p_idempotency_key: parsed.data.idempotencyKey,
     p_customer_name: parsed.data.customerName,
     p_customer_phone: parsed.data.customerPhone,
     p_address: parsed.data.address,

@@ -18,14 +18,19 @@ export function TestimonialsManager({ testimonials }: { testimonials: AdminTesti
 
   async function handleDelete() {
     if (!deleteTarget) return;
-    const result = await deleteTestimonial(deleteTarget.id);
-    if (!result.success) {
-      toast.error(result.error);
-      return;
+    try {
+      const result = await deleteTestimonial(deleteTarget.id, deleteTarget.updated_at);
+      if (!result.success) {
+        toast.error(result.error);
+        return;
+      }
+      toast.success("Đã xóa đánh giá");
+      setDeleteTarget(null);
+      router.refresh();
+    } catch {
+      toast.error("Không kết nối được. Chưa thể xác nhận việc xóa đánh giá.");
+      router.refresh();
     }
-    toast.success("Đã xóa đánh giá");
-    setDeleteTarget(null);
-    router.refresh();
   }
 
   return (

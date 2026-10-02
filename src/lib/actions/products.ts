@@ -4,6 +4,8 @@ import { updateTag } from "next/cache";
 import { requireAdmin, actionErrorMessage } from "@/lib/auth/requireAdmin";
 import { getSettings } from "@/lib/queries/settings";
 import { productFormSchema, type ProductFormValues } from "@/lib/validation/product";
+import { validateUploadedImage } from "@/lib/validation/image";
+import { z } from "zod";
 
 export type ActionResult =
   | { success: true }
@@ -59,22 +61,34 @@ export async function createProduct(input: unknown): Promise<ActionResult> {
   }
 }
 
-export async function updateProduct(productId: string, input: unknown): Promise<ActionResult> {
+export async function updateProduct(productId: string, expectedUpdatedAt: string, input: unknown): Promise<ActionResult> {
   try {
     const { supabase } = await requireAdmin();
+    if (!z.string().uuid().safeParse(productId).success || !z.string().datetime({ offset: true }).safeParse(expectedUpdatedAt).success) {
+      throw new Error("Phiên bản sản phẩm không hợp lệ. Hãy tải lại trang.");
+    }
     const data = parseProductForm(input);
 
-    const { data: existing } = await supabase
+    const { data: existing, error: readError } = await supabase
       .from("veloce_products")
-      .select("brand")
+      .select("brand, updated_at")
       .eq("id", productId)
-      .single();
+      .maybeSingle();
+    if (readError) throw new Error("Không tải được sản phẩm để sửa.");
+    if (!existing) throw new Error("Sản phẩm không tồn tại hoặc đã bị xóa.");
+    if (existing.updated_at !== expectedUpdatedAt) {
+      throw new Error("Sản phẩm đã được sửa hoặc tồn kho vừa thay đổi. Tải lại để so sánh trước khi lưu.");
+    }
 
-    const { error } = await supabase
+    const { data: updated, error } = await supabase
       .from("veloce_products")
-      .update(toRow(data, existing?.brand ?? ""))
-      .eq("id", productId);
+      .update(toRow(data, existing.brand))
+      .eq("id", productId)
+      .eq("updated_at", expectedUpdatedAt)
+      .select("id")
+      .maybeSingle();
     if (error) throw new Error(error.message);
+    if (!updated) throw new Error("Sản phẩm vừa được thay đổi. Tải lại trang trước khi lưu tiếp.");
 
     updateTag("products");
     return { success: true };
@@ -89,11 +103,18 @@ export async function toggleProductPublish(
 ): Promise<ActionResult> {
   try {
     const { supabase } = await requireAdmin();
-    const { error } = await supabase
+    if (!z.string().uuid().safeParse(productId).success || typeof isPublished !== "boolean") {
+      throw new Error("Dữ liệu xuất bản không hợp lệ.");
+    }
+    const { data, error } = await supabase
       .from("veloce_products")
       .update({ is_published: isPublished })
-      .eq("id", productId);
+      .eq("id", productId)
+      .eq("is_published", !isPublished)
+      .select("id")
+      .maybeSingle();
     if (error) throw new Error(error.message);
+    if (!data) throw new Error("Sản phẩm không tồn tại hoặc đã bị xóa.");
 
     updateTag("products");
     return { success: true };
@@ -102,32 +123,19 @@ export async function toggleProductPublish(
   }
 }
 
-export async function deleteProduct(productId: string): Promise<ActionResult> {
+export async function deleteProduct(productId: string, expectedUpdatedAt: string): Promise<ActionResult> {
   try {
     const { supabase } = await requireAdmin();
-
-    const { data: product } = await supabase
+    if (!z.string().uuid().safeParse(productId).success || !z.string().datetime({ offset: true }).safeParse(expectedUpdatedAt).success) throw new Error("Phiên bản sản phẩm không hợp lệ. Hãy tải lại trang.");
+    const { data, error } = await supabase
       .from("veloce_products")
-      .select("images")
+      .delete()
       .eq("id", productId)
-      .single();
-
-    if (product?.images?.length) {
-      const paths = product.images
-        .map((url) => {
-          const marker = "/object/public/veloce/";
-          const idx = url.indexOf(marker);
-          return idx === -1 ? null : url.slice(idx + marker.length);
-        })
-        .filter((path): path is string => !!path);
-
-      if (paths.length > 0) {
-        await supabase.storage.from("veloce").remove(paths);
-      }
-    }
-
-    const { error } = await supabase.from("veloce_products").delete().eq("id", productId);
+      .eq("updated_at", expectedUpdatedAt)
+      .select("id")
+      .maybeSingle();
     if (error) throw new Error(error.message);
+    if (!data) throw new Error("Sản phẩm vừa được thay đổi hoặc đã bị xóa. Tải lại trang trước khi xóa.");
 
     updateTag("products");
     return { success: true };
@@ -145,16 +153,15 @@ export async function uploadProductImage(formData: FormData): Promise<UploadImag
     if (!(file instanceof File) || typeof path !== "string") {
       throw new Error("Thiếu dữ liệu ảnh.");
     }
-    if (!/^products\/[a-z0-9-]+-[1-3]\.(png|jpg|jpeg|webp)$/.test(path)) {
+    if (!/^products\/[a-z0-9-]+-[1-3]-[a-f0-9-]{36}\.(png|jpg|jpeg|webp)$/.test(path)) {
       throw new Error("Đường dẫn ảnh sản phẩm không hợp lệ.");
     }
-    if (file.size > 5 * 1024 * 1024 || !["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
-      throw new Error("Ảnh phải là PNG, JPG hoặc WebP và nhỏ hơn 5 MB.");
-    }
+    const validationError = await validateUploadedImage(file, path);
+    if (validationError) throw new Error(validationError);
 
     const { error } = await supabase.storage
       .from("veloce")
-      .upload(path, file, { upsert: true, contentType: file.type });
+      .upload(path, file, { contentType: file.type });
     if (error) throw new Error(error.message);
 
     const { data } = supabase.storage.from("veloce").getPublicUrl(path);

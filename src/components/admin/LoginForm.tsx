@@ -27,7 +27,13 @@ export function LoginForm() {
 
   async function onSubmit(values: LoginValues) {
     setServerError(null);
-    const result = await signInAdmin(values.email, values.password);
+    let result;
+    try {
+      result = await signInAdmin(values.email, values.password);
+    } catch {
+      setServerError("Không kết nối được với hệ thống đăng nhập. Hãy thử lại.");
+      return;
+    }
     if (!result.success) {
       setServerError(result.error);
       return;

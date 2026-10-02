@@ -25,6 +25,7 @@ export const orderItemSchema = z.object({
 });
 
 export const placeOrderInputSchema = checkoutFormSchema.extend({
+  idempotencyKey: z.string().uuid(),
   items: z
     .array(orderItemSchema)
     .min(1, "Giỏ hàng đang trống")

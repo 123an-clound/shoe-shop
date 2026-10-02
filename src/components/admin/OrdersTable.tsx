@@ -7,13 +7,14 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/Badge";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { formatVND, formatTimeAgo } from "@/lib/format";
-import { ORDER_STATUS_FLOW, ORDER_STATUS_LABEL, isOrderStatus } from "@/lib/orderStatus";
+import { getNextOrderStatuses, ORDER_STATUS_LABEL, isOrderStatus } from "@/lib/orderStatus";
 import { cancelOrder, updateOrderStatus } from "@/lib/actions/adminOrders";
 import type { Order } from "@/lib/queries/admin";
 
 export function OrdersTable({ orders }: { orders: Order[] }) {
   const router = useRouter();
   const [cancelTarget, setCancelTarget] = useState<Order | null>(null);
+  const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
 
   const sorted = [...orders].sort((a, b) => {
     if (a.status === "pending" && b.status !== "pending") return -1;
@@ -22,25 +23,44 @@ export function OrdersTable({ orders }: { orders: Order[] }) {
   });
 
   async function handleStatusChange(order: Order, status: string) {
-    const result = await updateOrderStatus(order.id, status);
-    if (!result.success) {
-      toast.error(result.error);
-      return;
+    if (pendingOrderId) return;
+    setPendingOrderId(order.id);
+    try {
+      const result = await updateOrderStatus(order.id, status);
+      if (!result.success) {
+        toast.error(result.error);
+        router.refresh();
+        return;
+      }
+      toast.success("Đã cập nhật trạng thái");
+      router.refresh();
+    } catch {
+      toast.error("Không kết nối được. Hãy tải lại để kiểm tra trạng thái đơn.");
+      router.refresh();
+    } finally {
+      setPendingOrderId(null);
     }
-    toast.success("Đã cập nhật trạng thái");
-    router.refresh();
   }
 
   async function handleCancel() {
-    if (!cancelTarget) return;
-    const result = await cancelOrder(cancelTarget.id);
-    if (!result.success) {
-      toast.error(result.error);
-      return;
+    if (!cancelTarget || pendingOrderId) return;
+    setPendingOrderId(cancelTarget.id);
+    try {
+      const result = await cancelOrder(cancelTarget.id);
+      if (!result.success) {
+        toast.error(result.error);
+        router.refresh();
+        return;
+      }
+      toast.success("Đã hủy đơn và hoàn kho");
+      setCancelTarget(null);
+      router.refresh();
+    } catch {
+      toast.error("Không kết nối được. Hãy tải lại để kiểm tra trạng thái đơn.");
+      router.refresh();
+    } finally {
+      setPendingOrderId(null);
     }
-    toast.success("Đã hủy đơn và hoàn kho");
-    setCancelTarget(null);
-    router.refresh();
   }
 
   return (
@@ -72,22 +92,24 @@ export function OrdersTable({ orders }: { orders: Order[] }) {
               <td className="p-3 tabular-nums text-fg">{formatVND(order.total)}</td>
               <td className="p-3 text-fg-subtle">{formatTimeAgo(order.created_at)}</td>
               <td className="p-3">
-                {order.status === "cancelled" || order.status === "done" ? (
-                  <Badge tone={order.status === "cancelled" ? "muted" : "lime"}>
-                    {isOrderStatus(order.status) ? ORDER_STATUS_LABEL[order.status] : order.status}
-                  </Badge>
-                ) : (
+                {isOrderStatus(order.status) && getNextOrderStatuses(order.status).length > 0 ? (
                   <select
                     value={order.status}
                     onChange={(e) => handleStatusChange(order, e.target.value)}
-                    className="h-9 rounded-lg border border-ink-700 bg-ink-900 px-2 text-xs text-fg focus:border-brand focus:outline-none"
+                    disabled={pendingOrderId !== null}
+                    aria-label={`Trạng thái đơn ${order.code}`}
+                    className="h-9 rounded-lg border border-ink-700 bg-ink-900 px-2 text-xs text-fg focus:border-brand focus:outline-none disabled:cursor-wait disabled:opacity-60"
                   >
-                    {ORDER_STATUS_FLOW.map((status) => (
+                    {[order.status, ...getNextOrderStatuses(order.status)].map((status) => (
                       <option key={status} value={status}>
                         {ORDER_STATUS_LABEL[status]}
                       </option>
                     ))}
                   </select>
+                ) : (
+                  <Badge tone={order.status === "done" ? "lime" : "muted"}>
+                    {isOrderStatus(order.status) ? ORDER_STATUS_LABEL[order.status] : order.status}
+                  </Badge>
                 )}
               </td>
               <td className="p-3">

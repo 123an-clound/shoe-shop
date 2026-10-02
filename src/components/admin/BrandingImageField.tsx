@@ -24,10 +24,20 @@ export function BrandingImageField({
     if (!file) return;
     setUploading(true);
     const formData = new FormData();
+    const extension = file.type === "image/jpeg" ? "jpg" : file.type === "image/png" ? "png" : "webp";
+    const role = path.endsWith("logo") ? "logo" : "hero";
+    const uploadPath = `branding/${role}-${window.crypto.randomUUID()}.${extension}`;
     formData.set("file", file);
-    formData.set("path", path);
-    const result = await uploadSettingsImage(formData);
-    setUploading(false);
+    formData.set("path", uploadPath);
+    let result;
+    try {
+      result = await uploadSettingsImage(formData);
+    } catch {
+      toast.error("Không kết nối được để tải ảnh lên. Hãy thử lại.");
+      return;
+    } finally {
+      setUploading(false);
+    }
     if (!result.success) {
       toast.error(result.error);
       return;
@@ -71,7 +81,7 @@ export function BrandingImageField({
       <input
         ref={inputRef}
         type="file"
-        accept="image/*"
+        accept="image/png,image/jpeg,image/webp"
         className="hidden"
         onChange={(e) => handleFile(e.target.files?.[0])}
       />
