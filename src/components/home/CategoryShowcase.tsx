@@ -3,6 +3,8 @@ import Link from "next/link";
 import { Briefcase, Diamond, Footprints, Mountain, Zap } from "lucide-react";
 import { Reveal } from "@/components/ui/Reveal";
 import type { Category } from "@/lib/queries/categories";
+import type { Locale } from "@/lib/i18n/messages";
+import { getMessages, localizedHref } from "@/lib/i18n/messages";
 
 const CATEGORY_ICON: Record<string, typeof Footprints> = {
   sneaker: Footprints,
@@ -12,12 +14,13 @@ const CATEGORY_ICON: Record<string, typeof Footprints> = {
   boot: Mountain,
 };
 
-export function CategoryShowcase({ categories }: { categories: Category[] }) {
+export function CategoryShowcase({ categories, locale }: { categories: Category[]; locale: Locale }) {
+  const copy = getMessages(locale);
   return (
     <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
       <Reveal>
         <h2 className="font-display text-3xl font-bold text-fg sm:text-4xl">
-          Khám phá theo danh mục
+          {copy.home.categories}
         </h2>
       </Reveal>
 
@@ -28,7 +31,7 @@ export function CategoryShowcase({ categories }: { categories: Category[] }) {
           return (
             <Reveal key={category.id} delay={(index % 5) * 0.05}>
               <Link
-                href={`/san-pham?danh-muc=${category.slug}`}
+                href={localizedHref(`/san-pham?danh-muc=${category.slug}`, locale)}
                 className="group relative block aspect-[3/4] overflow-hidden rounded-[var(--radius-card)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950"
               >
                 {category.image_url ? (
@@ -52,7 +55,7 @@ export function CategoryShowcase({ categories }: { categories: Category[] }) {
                 <div className="absolute inset-0 bg-gradient-to-t from-ink-950/90 via-ink-950/10 to-transparent transition-opacity duration-300 group-hover:from-ink-950/95" />
 
                 <span className="absolute inset-x-0 bottom-0 p-4 font-display text-lg font-medium text-fg transition-transform duration-300 ease-out group-hover:-translate-y-1">
-                  {category.name}
+                  {locale === "en" ? category.name_en || category.name : category.name}
                 </span>
               </Link>
             </Reveal>

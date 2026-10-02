@@ -15,6 +15,6 @@ export const getTestimonials = unstable_cache(
     if (error) throw new Error("Không đọc được đánh giá khách hàng.");
     return data;
   },
-  ["veloce-testimonials"],
+  ["veloce-testimonials-v2"],
   { tags: ["testimonials"] },
 );

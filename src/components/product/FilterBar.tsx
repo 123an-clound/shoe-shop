@@ -7,6 +7,7 @@ import { formatVND } from "@/lib/format";
 import type { Category } from "@/lib/queries/categories";
 import type { ProductColor } from "@/types";
 import type { Filters } from "@/lib/productFilters";
+import type { Locale } from "@/lib/i18n/messages";
 
 export function FilterBar({
   categories,
@@ -15,6 +16,7 @@ export function FilterBar({
   priceBounds,
   filters,
   onChange,
+  locale = "vi",
 }: {
   categories: Category[];
   availableSizes: number[];
@@ -22,6 +24,7 @@ export function FilterBar({
   priceBounds: [number, number];
   filters: Filters;
   onChange: Dispatch<SetStateAction<Filters>>;
+  locale?: Locale;
 }) {
   function toggleSize(size: number) {
     onChange((f) => ({
@@ -40,7 +43,7 @@ export function FilterBar({
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <p className="text-sm font-medium text-fg">Danh mục</p>
+        <p className="text-sm font-medium text-fg">{locale === "en" ? "Category" : "Danh mục"}</p>
         <div className="mt-3 flex flex-col gap-2">
           <label className="flex items-center gap-2 text-sm text-fg-muted">
             <input
@@ -50,7 +53,7 @@ export function FilterBar({
               onChange={() => onChange((f) => ({ ...f, category: null }))}
               className="accent-brand"
             />
-            Tất cả
+            {locale === "en" ? "All" : "Tất cả"}
           </label>
           {categories.map((category) => (
             <label
@@ -64,14 +67,14 @@ export function FilterBar({
                 onChange={() => onChange((f) => ({ ...f, category: category.id }))}
                 className="accent-brand"
               />
-              {category.name}
+              {locale === "en" ? category.name_en || category.name : category.name}
             </label>
           ))}
         </div>
       </div>
 
       <div>
-        <p className="text-sm font-medium text-fg">Khoảng giá</p>
+        <p className="text-sm font-medium text-fg">{locale === "en" ? "Price range" : "Khoảng giá"}</p>
         <div className="mt-3 flex flex-col gap-2">
           <input
             type="range"
@@ -102,7 +105,7 @@ export function FilterBar({
       </div>
 
       <div>
-        <p className="text-sm font-medium text-fg">Size</p>
+        <p className="text-sm font-medium text-fg">{locale === "en" ? "Size (EU)" : "Size"}</p>
         <div className="mt-3 flex flex-wrap gap-2">
           {availableSizes.map((size) => (
             <button
@@ -124,7 +127,7 @@ export function FilterBar({
       </div>
 
       <div>
-        <p className="text-sm font-medium text-fg">Màu sắc</p>
+        <p className="text-sm font-medium text-fg">{locale === "en" ? "Color" : "Màu sắc"}</p>
         <div className="mt-3 flex flex-wrap gap-3">
           {availableColors.map((color) => {
             const selected = filters.colors.includes(color.hex);
@@ -164,7 +167,7 @@ export function FilterBar({
           onChange={(e) => onChange((f) => ({ ...f, saleOnly: e.target.checked }))}
           className="accent-brand"
         />
-        Chỉ hàng đang giảm giá
+        {locale === "en" ? "On sale only" : "Chỉ hàng đang giảm giá"}
       </label>
     </div>
   );

@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.17"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -26,6 +26,147 @@ export type Database = {
         Update: {
           created_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      apple_admins: {
+        Row: {
+          created_at: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      apple_audit_log: {
+        Row: {
+          action: string
+          actor: string | null
+          actor_email: string | null
+          after: Json | null
+          at: string
+          before: Json | null
+          id: number
+          row_id: string | null
+          table_name: string
+        }
+        Insert: {
+          action: string
+          actor?: string | null
+          actor_email?: string | null
+          after?: Json | null
+          at?: string
+          before?: Json | null
+          id?: never
+          row_id?: string | null
+          table_name: string
+        }
+        Update: {
+          action?: string
+          actor?: string | null
+          actor_email?: string | null
+          after?: Json | null
+          at?: string
+          before?: Json | null
+          id?: never
+          row_id?: string | null
+          table_name?: string
+        }
+        Relationships: []
+      }
+      apple_leads: {
+        Row: {
+          admin_note: string | null
+          client_hash: string | null
+          created_at: string
+          id: number
+          kind: string
+          name: string
+          note: string | null
+          phone: string
+          product: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_note?: string | null
+          client_hash?: string | null
+          created_at?: string
+          id?: never
+          kind?: string
+          name: string
+          note?: string | null
+          phone: string
+          product?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_note?: string | null
+          client_hash?: string | null
+          created_at?: string
+          id?: never
+          kind?: string
+          name?: string
+          note?: string | null
+          phone?: string
+          product?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      apple_settings: {
+        Row: {
+          address: string | null
+          close_time: string | null
+          hotline: string
+          id: number
+          latitude: number | null
+          longitude: number | null
+          maps_url: string | null
+          open_time: string | null
+          response_promise: string | null
+          updated_at: string
+          zalo: string
+          zalo_tragop: string
+        }
+        Insert: {
+          address?: string | null
+          close_time?: string | null
+          hotline?: string
+          id?: number
+          latitude?: number | null
+          longitude?: number | null
+          maps_url?: string | null
+          open_time?: string | null
+          response_promise?: string | null
+          updated_at?: string
+          zalo?: string
+          zalo_tragop?: string
+        }
+        Update: {
+          address?: string | null
+          close_time?: string | null
+          hotline?: string
+          id?: number
+          latitude?: number | null
+          longitude?: number | null
+          maps_url?: string | null
+          open_time?: string | null
+          response_promise?: string | null
+          updated_at?: string
+          zalo?: string
+          zalo_tragop?: string
         }
         Relationships: []
       }
@@ -124,8 +265,9 @@ export type Database = {
       }
       kho_iphone: {
         Row: {
+          badge: string | null
           "Dung Lượng RAM/ROM": string | null
-          Giá: string | null
+          Giá: number | null
           "Hình ảnh sản phẩm 1": string | null
           "Hình ảnh sản phẩm 2": string | null
           "Hình ảnh sản phẩm 3": string | null
@@ -133,29 +275,19 @@ export type Database = {
           "Hình ảnh sản phẩm 5": string | null
           "Hình ảnh sản phẩm 6": string | null
           id: number
+          is_visible: boolean
           "Mã sản phẩm": string | null
           "Mô tả": string | null
+          sale_price: number | null
+          stock: number | null
           stt: string | null
           "Tên sản phẩm": string | null
+          updated_at: string
         }
         Insert: {
+          badge?: string | null
           "Dung Lượng RAM/ROM"?: string | null
-          Giá?: string | null
-          "Hình ảnh sản phẩm 1"?: string | null
-          "Hình ảnh sản phẩm 2"?: string | null
-          "Hình ảnh sản phẩm 3"?: string | null
-          "Hình ảnh sản phẩm 4"?: string | null
-          "Hình ảnh sản phẩm 5"?: string | null
-          "Hình ảnh sản phẩm 6"?: string | null
-          id: number
-          "Mã sản phẩm"?: string | null
-          "Mô tả"?: string | null
-          stt?: string | null
-          "Tên sản phẩm"?: string | null
-        }
-        Update: {
-          "Dung Lượng RAM/ROM"?: string | null
-          Giá?: string | null
+          Giá?: number | null
           "Hình ảnh sản phẩm 1"?: string | null
           "Hình ảnh sản phẩm 2"?: string | null
           "Hình ảnh sản phẩm 3"?: string | null
@@ -163,10 +295,34 @@ export type Database = {
           "Hình ảnh sản phẩm 5"?: string | null
           "Hình ảnh sản phẩm 6"?: string | null
           id?: number
+          is_visible?: boolean
           "Mã sản phẩm"?: string | null
           "Mô tả"?: string | null
+          sale_price?: number | null
+          stock?: number | null
           stt?: string | null
           "Tên sản phẩm"?: string | null
+          updated_at?: string
+        }
+        Update: {
+          badge?: string | null
+          "Dung Lượng RAM/ROM"?: string | null
+          Giá?: number | null
+          "Hình ảnh sản phẩm 1"?: string | null
+          "Hình ảnh sản phẩm 2"?: string | null
+          "Hình ảnh sản phẩm 3"?: string | null
+          "Hình ảnh sản phẩm 4"?: string | null
+          "Hình ảnh sản phẩm 5"?: string | null
+          "Hình ảnh sản phẩm 6"?: string | null
+          id?: number
+          is_visible?: boolean
+          "Mã sản phẩm"?: string | null
+          "Mô tả"?: string | null
+          sale_price?: number | null
+          stock?: number | null
+          stt?: string | null
+          "Tên sản phẩm"?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -245,27 +401,33 @@ export type Database = {
         Row: {
           created_at: string
           description: string | null
+          description_en: string | null
           id: string
           image_url: string | null
           name: string
+          name_en: string | null
           slug: string
           sort_order: number
         }
         Insert: {
           created_at?: string
           description?: string | null
+          description_en?: string | null
           id?: string
           image_url?: string | null
           name: string
+          name_en?: string | null
           slug: string
           sort_order?: number
         }
         Update: {
           created_at?: string
           description?: string | null
+          description_en?: string | null
           id?: string
           image_url?: string | null
           name?: string
+          name_en?: string | null
           slug?: string
           sort_order?: number
         }
@@ -333,11 +495,14 @@ export type Database = {
           colors: Json
           created_at: string
           description: string
+          description_en: string | null
           features: string[]
+          features_en: string[] | null
           id: string
           images: string[]
           is_published: boolean
           name: string
+          name_en: string | null
           original_price: number | null
           price: number
           rating: number
@@ -356,11 +521,14 @@ export type Database = {
           colors?: Json
           created_at?: string
           description?: string
+          description_en?: string | null
           features?: string[]
+          features_en?: string[] | null
           id?: string
           images?: string[]
           is_published?: boolean
           name: string
+          name_en?: string | null
           original_price?: number | null
           price: number
           rating?: number
@@ -379,11 +547,14 @@ export type Database = {
           colors?: Json
           created_at?: string
           description?: string
+          description_en?: string | null
           features?: string[]
+          features_en?: string[] | null
           id?: string
           images?: string[]
           is_published?: boolean
           name?: string
+          name_en?: string | null
           original_price?: number | null
           price?: number
           rating?: number
@@ -408,6 +579,9 @@ export type Database = {
       veloce_settings: {
         Row: {
           address: string | null
+          announcement_enabled: boolean
+          announcement_text_en: string | null
+          announcement_text_vi: string | null
           color_accent: string
           color_primary: string
           color_secondary: string
@@ -416,21 +590,37 @@ export type Database = {
           email: string | null
           facebook_url: string | null
           freeship_threshold: number
+          hero_cta_label_en: string | null
+          hero_cta_label_vi: string | null
           hero_headline: string | null
+          hero_headline_en: string | null
           hero_image_url: string | null
+          hero_secondary_label_en: string | null
+          hero_secondary_label_vi: string | null
           hero_subheadline: string | null
+          hero_subheadline_en: string | null
+          homepage_sections: Json
           id: number
           instagram_url: string | null
           logo_url: string | null
+          og_image_url: string | null
           phone: string | null
+          seo_description_en: string | null
+          seo_description_vi: string | null
+          seo_title_en: string | null
+          seo_title_vi: string | null
           shipping_fee: number
           slogan: string
+          slogan_en: string | null
           store_name: string
           updated_at: string
           zalo_url: string | null
         }
         Insert: {
           address?: string | null
+          announcement_enabled?: boolean
+          announcement_text_en?: string | null
+          announcement_text_vi?: string | null
           color_accent?: string
           color_primary?: string
           color_secondary?: string
@@ -439,21 +629,37 @@ export type Database = {
           email?: string | null
           facebook_url?: string | null
           freeship_threshold?: number
+          hero_cta_label_en?: string | null
+          hero_cta_label_vi?: string | null
           hero_headline?: string | null
+          hero_headline_en?: string | null
           hero_image_url?: string | null
+          hero_secondary_label_en?: string | null
+          hero_secondary_label_vi?: string | null
           hero_subheadline?: string | null
+          hero_subheadline_en?: string | null
+          homepage_sections?: Json
           id?: number
           instagram_url?: string | null
           logo_url?: string | null
+          og_image_url?: string | null
           phone?: string | null
+          seo_description_en?: string | null
+          seo_description_vi?: string | null
+          seo_title_en?: string | null
+          seo_title_vi?: string | null
           shipping_fee?: number
           slogan?: string
+          slogan_en?: string | null
           store_name?: string
           updated_at?: string
           zalo_url?: string | null
         }
         Update: {
           address?: string | null
+          announcement_enabled?: boolean
+          announcement_text_en?: string | null
+          announcement_text_vi?: string | null
           color_accent?: string
           color_primary?: string
           color_secondary?: string
@@ -462,15 +668,28 @@ export type Database = {
           email?: string | null
           facebook_url?: string | null
           freeship_threshold?: number
+          hero_cta_label_en?: string | null
+          hero_cta_label_vi?: string | null
           hero_headline?: string | null
+          hero_headline_en?: string | null
           hero_image_url?: string | null
+          hero_secondary_label_en?: string | null
+          hero_secondary_label_vi?: string | null
           hero_subheadline?: string | null
+          hero_subheadline_en?: string | null
+          homepage_sections?: Json
           id?: number
           instagram_url?: string | null
           logo_url?: string | null
+          og_image_url?: string | null
           phone?: string | null
+          seo_description_en?: string | null
+          seo_description_vi?: string | null
+          seo_title_en?: string | null
+          seo_title_vi?: string | null
           shipping_fee?: number
           slogan?: string
+          slogan_en?: string | null
           store_name?: string
           updated_at?: string
           zalo_url?: string | null
@@ -481,34 +700,40 @@ export type Database = {
         Row: {
           avatar_url: string | null
           content: string
+          content_en: string | null
           created_at: string
           id: string
           is_published: boolean
           name: string
           rating: number
           role: string | null
+          role_en: string | null
           sort_order: number
         }
         Insert: {
           avatar_url?: string | null
           content: string
+          content_en?: string | null
           created_at?: string
           id?: string
           is_published?: boolean
           name: string
           rating?: number
           role?: string | null
+          role_en?: string | null
           sort_order?: number
         }
         Update: {
           avatar_url?: string | null
           content?: string
+          content_en?: string | null
           created_at?: string
           id?: string
           is_published?: boolean
           name?: string
           rating?: number
           role?: string | null
+          role_en?: string | null
           sort_order?: number
         }
         Relationships: []
@@ -807,6 +1032,31 @@ export type Database = {
       }
     }
     Functions: {
+      apple_list_admins: {
+        Args: never
+        Returns: {
+          created_at: string
+          email: string
+          last_sign_in_at: string
+          role: string
+          user_id: string
+        }[]
+      }
+      apple_set_admin: {
+        Args: { p_email: string; p_role: string }
+        Returns: undefined
+      }
+      apple_submit_lead: {
+        Args: {
+          p_client?: string
+          p_kind?: string
+          p_name: string
+          p_note?: string
+          p_phone: string
+          p_product?: string
+        }
+        Returns: boolean
+      }
       bakery_next_order_code: { Args: never; Returns: string }
       bakery_unaccent: { Args: { txt: string }; Returns: string }
       search_products: {
@@ -822,6 +1072,12 @@ export type Database = {
           type: string
           updated_at: string
         }[]
+        SetofOptions: {
+          from: "*"
+          to: "bakery"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       veloce_cancel_order: { Args: { p_order_id: string }; Returns: undefined }
       veloce_place_order: {
@@ -858,12 +1114,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -887,11 +1143,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -912,11 +1168,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -937,11 +1193,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -954,11 +1210,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }

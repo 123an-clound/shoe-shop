@@ -18,7 +18,7 @@ export default function GlobalError({ reset }: { reset: () => void }) {
           <button
             type="button"
             onClick={reset}
-            className="rounded-full bg-brand px-6 py-3 text-sm font-medium text-ink-950"
+            className="rounded-full bg-brand px-6 py-3 text-sm font-medium text-on-brand"
           >
             Thử lại
           </button>

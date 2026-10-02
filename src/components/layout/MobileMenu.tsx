@@ -1,9 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
+import { LocaleLink } from "@/components/i18n/LocaleLink";
+import { useLocaleContext } from "@/components/i18n/LocaleProvider";
+import { LanguageSwitch } from "@/components/i18n/LanguageSwitch";
+import { ThemeToggle } from "@/components/i18n/ThemeToggle";
 
 type NavItem = { href: string; label: string };
 
@@ -15,6 +18,7 @@ export function MobileMenu({
   navItems: NavItem[];
 }) {
   const [open, setOpen] = useState(false);
+  const { messages } = useLocaleContext();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -38,7 +42,7 @@ export function MobileMenu({
     <>
       <button
         type="button"
-        aria-label="Mở menu"
+        aria-label={messages.controls.openMenu}
         onClick={() => setOpen(true)}
         className="flex h-11 w-11 items-center justify-center rounded-full text-fg transition-colors hover:bg-white/5 md:hidden"
       >
@@ -50,7 +54,7 @@ export function MobileMenu({
           <motion.div
             role="dialog"
             aria-modal="true"
-            aria-label={`Menu điều hướng — ${storeName}`}
+            aria-label={`${messages.controls.openMenu} — ${storeName}`}
             className="fixed inset-0 z-[60] md:hidden"
           >
             <motion.div
@@ -76,7 +80,7 @@ export function MobileMenu({
                 <button
                   ref={closeButtonRef}
                   type="button"
-                  aria-label="Đóng menu"
+                  aria-label={messages.controls.closeMenu}
                   onClick={() => setOpen(false)}
                   className="flex h-11 w-11 items-center justify-center rounded-full text-fg transition-colors hover:bg-white/5"
                 >
@@ -86,16 +90,17 @@ export function MobileMenu({
 
               <nav className="flex flex-col gap-1">
                 {navItems.map((item) => (
-                  <Link
+                  <LocaleLink
                     key={item.href}
                     href={item.href}
                     onClick={() => setOpen(false)}
                     className="rounded-lg px-3 py-3 text-base text-fg-muted transition-colors hover:bg-white/5 hover:text-fg"
                   >
                     {item.label}
-                  </Link>
+                  </LocaleLink>
                 ))}
               </nav>
+              <div className="mt-auto flex items-center justify-between"><LanguageSwitch /><ThemeToggle /></div>
             </motion.div>
           </motion.div>
         )}

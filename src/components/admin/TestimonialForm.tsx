@@ -31,11 +31,13 @@ export function TestimonialForm({
       ? {
           name: testimonial.name,
           role: testimonial.role ?? "",
+          roleEn: testimonial.role_en ?? "",
           content: testimonial.content,
+          contentEn: testimonial.content_en ?? "",
           rating: testimonial.rating,
           isPublished: testimonial.is_published,
         }
-      : { name: "", role: "", content: "", rating: 5, isPublished: true },
+      : { name: "", role: "", roleEn: "", content: "", contentEn: "", rating: 5, isPublished: true },
   });
 
   async function onSubmit(values: TestimonialFormValues) {
@@ -62,6 +64,7 @@ export function TestimonialForm({
         <Input label="Tên khách hàng" error={errors.name?.message} {...register("name")} />
         <Input label="Vai trò (không bắt buộc)" {...register("role")} />
       </div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2"><Input label="Role (English)" {...register("roleEn")} /></div>
       <div>
         <label className="text-sm text-fg-muted">Nội dung</label>
         <textarea
@@ -70,6 +73,10 @@ export function TestimonialForm({
           className="mt-1.5 w-full rounded-lg border border-ink-700 bg-ink-900 px-4 py-3 text-sm text-fg focus:border-brand focus:outline-none"
         />
         {errors.content && <p className="mt-1 text-xs text-red-400">{errors.content.message}</p>}
+      </div>
+      <div>
+        <label className="text-sm text-fg-muted">Review (English)</label>
+        <textarea rows={3} {...register("contentEn")} className="mt-1.5 w-full rounded-lg border border-ink-700 bg-ink-900 px-4 py-3 text-sm text-fg focus:border-brand focus:outline-none" />
       </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Input

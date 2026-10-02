@@ -9,6 +9,7 @@ import { flyToCart } from "@/lib/flyToCart";
 import { formatVND } from "@/lib/format";
 import { usePrefersReducedMotion } from "@/lib/hooks/useMediaQuery";
 import type { Product } from "@/lib/queries/products";
+import { useLocaleContext } from "@/components/i18n/LocaleProvider";
 
 /** Chọn màu + size xong mới thêm được vào giỏ. Dính đáy màn hình trên mobile (Phụ lục A2 PLAN.md). */
 export function AddToCartBar({
@@ -24,15 +25,16 @@ export function AddToCartBar({
   const buttonWrapperRef = useRef<HTMLDivElement>(null);
   const addItem = useCartStore((state) => state.addItem);
   const reducedMotion = usePrefersReducedMotion();
+  const { locale, messages } = useLocaleContext();
   const outOfStock = product.stock <= 0;
 
   function handleAddToCart() {
     if (!selectedColor) {
-      toast.error("Chọn màu trước khi thêm vào giỏ");
+      toast.error(messages.product.selectColor);
       return;
     }
     if (!selectedSize) {
-      toast.error("Chọn size trước khi thêm vào giỏ");
+      toast.error(messages.product.selectSize);
       return;
     }
 
@@ -40,6 +42,7 @@ export function AddToCartBar({
       productId: product.id,
       slug: product.slug,
       name: product.name,
+      nameEn: product.name_en ?? product.name,
       price: product.price,
       image: product.images[0] ?? "",
       size: selectedSize,
@@ -51,7 +54,7 @@ export function AddToCartBar({
       flyToCart(buttonWrapperRef.current, product.images[0]);
     }
 
-    toast.success(`Đã thêm ${product.name} vào giỏ`);
+    toast.success(locale === "en" ? `${product.name_en || product.name} ${messages.product.added.toLowerCase()}` : `Đã thêm ${product.name} vào giỏ`);
     setQuantity(1);
   }
 
@@ -87,8 +90,8 @@ export function AddToCartBar({
             className="w-full"
           >
             {outOfStock
-              ? "Tạm hết hàng"
-              : `Thêm vào giỏ — ${formatVND(product.price * quantity)}`}
+              ? messages.product.soldOut
+              : `${messages.product.addToCart} — ${formatVND(product.price * quantity)}`}
           </Button>
         </div>
       </div>

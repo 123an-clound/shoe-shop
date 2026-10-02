@@ -1,15 +1,17 @@
-import Link from "next/link";
 import { Mail, MapPin, Phone } from "lucide-react";
 import type { Settings } from "@/lib/queries/settings";
+import { LocaleLink } from "@/components/i18n/LocaleLink";
+import type { Locale } from "@/lib/i18n/messages";
+import { getMessages } from "@/lib/i18n/messages";
 
-const NAV_LINKS = [
-  { href: "/san-pham", label: "Sản phẩm" },
-  { href: "/ve-chung-toi", label: "Về chúng tôi" },
-  { href: "/lien-he", label: "Liên hệ" },
-];
-
-export function Footer({ settings }: { settings: Settings }) {
+export function Footer({ settings, locale }: { settings: Settings; locale: Locale }) {
   const year = new Date().getFullYear();
+  const messages = getMessages(locale);
+  const navLinks = [
+    { href: "/san-pham", label: messages.nav.products },
+    { href: "/ve-chung-toi", label: messages.nav.about },
+    { href: "/lien-he", label: messages.nav.contact },
+  ];
 
   return (
     <footer className="border-t border-ink-700 bg-ink-900">
@@ -19,7 +21,7 @@ export function Footer({ settings }: { settings: Settings }) {
             {settings.store_name}
           </p>
           <p className="mt-3 max-w-xs text-sm text-fg-muted">
-            {settings.slogan}
+            {(locale === "en" ? settings.slogan_en : settings.slogan) || settings.slogan}
           </p>
           <div className="mt-5 flex items-center gap-3">
             {settings.facebook_url && (
@@ -56,23 +58,23 @@ export function Footer({ settings }: { settings: Settings }) {
         </div>
 
         <div>
-          <p className="text-sm font-medium text-fg">Điều hướng</p>
+          <p className="text-sm font-medium text-fg">{messages.footer.direction}</p>
           <ul className="mt-4 flex flex-col gap-3">
-            {NAV_LINKS.map((item) => (
+            {navLinks.map((item) => (
               <li key={item.href}>
-                <Link
+                <LocaleLink
                   href={item.href}
                   className="text-sm text-fg-muted transition-colors hover:text-fg"
                 >
                   {item.label}
-                </Link>
+                </LocaleLink>
               </li>
             ))}
           </ul>
         </div>
 
         <div>
-          <p className="text-sm font-medium text-fg">Liên hệ</p>
+          <p className="text-sm font-medium text-fg">{messages.footer.contact}</p>
           <ul className="mt-4 flex flex-col gap-3 text-sm text-fg-muted">
             {settings.phone && (
               <li className="flex items-center gap-2">
@@ -101,8 +103,7 @@ export function Footer({ settings }: { settings: Settings }) {
       </div>
 
       <div className="border-t border-ink-700 px-4 py-6 text-center text-xs text-fg-muted sm:px-6 lg:px-8">
-        © {year} {settings.store_name}. Đây là trang demo, không phát sinh
-        giao dịch thật.
+        © {year} {settings.store_name}. {messages.footer.demo}
       </div>
     </footer>
   );

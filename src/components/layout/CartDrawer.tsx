@@ -7,8 +7,10 @@ import { CartItemRow } from "@/components/cart/CartItemRow";
 import { FreeshipProgress } from "@/components/cart/FreeshipProgress";
 import { useCartStore } from "@/store/cart";
 import { formatVND } from "@/lib/format";
+import { useLocaleContext } from "@/components/i18n/LocaleProvider";
 
 export function CartDrawer({ freeshipThreshold }: { freeshipThreshold: number }) {
+  const { messages } = useLocaleContext();
   const isOpen = useCartStore((state) => state.isOpen);
   const closeCart = useCartStore((state) => state.closeCart);
   const items = useCartStore((state) => state.items);
@@ -16,13 +18,13 @@ export function CartDrawer({ freeshipThreshold }: { freeshipThreshold: number })
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
-    <Drawer open={isOpen} onClose={closeCart} side="right" title="Giỏ hàng">
+    <Drawer open={isOpen} onClose={closeCart} side="right" title={messages.cart.title}>
       {items.length === 0 ? (
         <div className="flex flex-col items-center gap-4 py-16 text-center">
           <ShoppingBag className="h-10 w-10 text-fg-subtle" aria-hidden="true" />
-          <p className="text-fg-muted">Giỏ hàng đang trống.</p>
+          <p className="text-fg-muted">{messages.cart.empty}</p>
           <Button href="/san-pham" variant="glass" onClick={closeCart}>
-            Tiếp tục mua sắm
+            {messages.cart.continue}
           </Button>
         </div>
       ) : (
@@ -37,14 +39,14 @@ export function CartDrawer({ freeshipThreshold }: { freeshipThreshold: number })
 
           <div className="flex flex-col gap-3 border-t border-ink-700 pt-4">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-fg-muted">Tạm tính</span>
+              <span className="text-fg-muted">{messages.cart.subtotal}</span>
               <span className="tabular-nums font-medium text-fg">{formatVND(subtotal)}</span>
             </div>
             <Button href="/thanh-toan" onClick={closeCart}>
-              Thanh toán
+              {messages.cart.checkout}
             </Button>
             <Button href="/gio-hang" variant="ghost" onClick={closeCart}>
-              Xem giỏ hàng đầy đủ
+              {messages.cart.fullCart}
             </Button>
           </div>
         </div>

@@ -51,6 +51,7 @@ export function ProductBasicFields({
           error={errors.slug?.message}
         />
       </div>
+      <Input label="Product name (English)" {...register("nameEn")} />
 
       <div>
         <label className="text-sm text-fg-muted">Danh mục</label>
@@ -68,6 +69,10 @@ export function ProductBasicFields({
         {errors.categoryId && (
           <p className="mt-1 text-xs text-red-400">{errors.categoryId.message}</p>
         )}
+      </div>
+      <div>
+        <label className="text-sm text-fg-muted">Description (English)</label>
+        <textarea rows={4} {...register("descriptionEn")} className="mt-1.5 w-full rounded-lg border border-ink-700 bg-ink-900 px-4 py-3 text-sm text-fg focus:border-brand focus:outline-none" />
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

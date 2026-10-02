@@ -10,14 +10,19 @@ import { SORT_LABEL, sortProducts, type Filters, type SortOption } from "@/lib/p
 import type { Product } from "@/lib/queries/products";
 import type { Category } from "@/lib/queries/categories";
 import type { ProductColor } from "@/types";
+import type { Locale } from "@/lib/i18n/messages";
+import { getMessages } from "@/lib/i18n/messages";
 
 function ProductListingInner({
   products,
   categories,
+  locale,
 }: {
   products: Product[];
   categories: Category[];
+  locale: Locale;
 }) {
+  const copy = getMessages(locale).product;
   const searchParams = useSearchParams();
 
   const priceBounds = useMemo<[number, number]>(() => {
@@ -94,6 +99,7 @@ function ProductListingInner({
       priceBounds={priceBounds}
       filters={filters}
       onChange={setFilters}
+      locale={locale}
     />
   );
 
@@ -101,7 +107,7 @@ function ProductListingInner({
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between gap-4">
         <h1 className="font-display text-3xl font-bold text-fg sm:text-4xl">
-          Tất cả sản phẩm
+          {copy.all}
         </h1>
         <button
           type="button"
@@ -109,7 +115,7 @@ function ProductListingInner({
           className="glass flex h-11 shrink-0 items-center gap-2 rounded-full px-4 text-sm text-fg lg:hidden"
         >
           <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
-          Bộ lọc
+          {copy.filters}
         </button>
       </div>
 
@@ -118,24 +124,24 @@ function ProductListingInner({
 
         <div>
           <div className="mb-6 flex items-center justify-between gap-4">
-            <p className="text-sm text-fg-muted">{filtered.length} sản phẩm</p>
+            <p className="text-sm text-fg-muted">{copy.count.replace("{{count}}", String(filtered.length))}</p>
             <select
               value={filters.sort}
               onChange={(e) =>
                 setFilters((f) => ({ ...f, sort: e.target.value as SortOption }))
               }
-              aria-label="Sắp xếp"
+              aria-label={copy.sort}
               className="h-10 rounded-lg border border-ink-700 bg-ink-900 px-3 text-sm text-fg focus:border-brand focus:outline-none"
             >
               {Object.entries(SORT_LABEL).map(([value, label]) => (
                 <option key={value} value={value}>
-                  {label}
+                  {locale === "en" ? ({ "noi-bat": "Featured", "moi-nhat": "Newest", "gia-tang": "Price: low to high", "gia-giam": "Price: high to low", "danh-gia-cao": "Top rated" }[value] ?? label) : label}
                 </option>
               ))}
             </select>
           </div>
 
-          <ProductResultsGrid products={filtered} onResetFilters={resetFilters} />
+          <ProductResultsGrid products={filtered} onResetFilters={resetFilters} locale={locale} />
         </div>
       </div>
 
@@ -143,7 +149,7 @@ function ProductListingInner({
         open={mobileFiltersOpen}
         onClose={() => setMobileFiltersOpen(false)}
         side="bottom"
-        title="Bộ lọc"
+        title={copy.filters}
       >
         {filterBar}
       </Drawer>
@@ -151,7 +157,7 @@ function ProductListingInner({
   );
 }
 
-export function ProductListing(props: { products: Product[]; categories: Category[] }) {
+export function ProductListing(props: { products: Product[]; categories: Category[]; locale: Locale }) {
   return (
     <Suspense fallback={null}>
       <ProductListingInner {...props} />

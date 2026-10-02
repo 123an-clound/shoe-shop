@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { LocaleLink } from "@/components/i18n/LocaleLink";
 import { cn } from "@/lib/cn";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 
@@ -10,7 +10,7 @@ const base =
 
 const variants: Record<Variant, string> = {
   gradient:
-    "text-ink-950 bg-[image:var(--gradient-aurora)] shadow-[var(--shadow-glow)] hover:brightness-110",
+    "text-on-brand bg-[image:var(--gradient-aurora)] shadow-[var(--shadow-glow)] hover:brightness-110",
   glass: "glass text-fg hover:bg-white/10",
   ghost: "text-fg-muted hover:bg-white/5 hover:text-fg",
 };
@@ -31,7 +31,7 @@ type ButtonAsButton = CommonProps &
   Omit<ComponentPropsWithoutRef<"button">, keyof CommonProps> & { href?: undefined };
 
 type ButtonAsLink = CommonProps &
-  Omit<ComponentPropsWithoutRef<typeof Link>, keyof CommonProps | "href"> & {
+  Omit<ComponentPropsWithoutRef<typeof LocaleLink>, keyof CommonProps | "href"> & {
     href: string;
   };
 
@@ -47,13 +47,13 @@ export function Button({
 
   if (href) {
     return (
-      <Link
+      <LocaleLink
         href={href}
         className={classes}
-        {...(props as Omit<ComponentPropsWithoutRef<typeof Link>, "href">)}
+        {...(props as Omit<ComponentPropsWithoutRef<typeof LocaleLink>, "href">)}
       >
         {children}
-      </Link>
+      </LocaleLink>
     );
   }
 

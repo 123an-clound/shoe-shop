@@ -33,12 +33,15 @@ export function ProductForm({
     defaultValues: product
       ? {
           name: product.name,
+          nameEn: product.name_en ?? "",
           slug: product.slug,
           categoryId: product.category_id ?? "",
           price: product.price,
           originalPrice: product.original_price,
           description: product.description,
+          descriptionEn: product.description_en ?? "",
           features: product.features,
+          featuresEn: product.features_en ?? [],
           sizes: product.sizes,
           colors: product.colors as ProductColor[],
           badge: product.badge as ProductFormValues["badge"],
@@ -48,12 +51,15 @@ export function ProductForm({
         }
       : {
           name: "",
+          nameEn: "",
           slug: "",
           categoryId: "",
           price: 0,
           originalPrice: null,
           description: "",
+          descriptionEn: "",
           features: [],
+          featuresEn: [],
           sizes: [],
           colors: [],
           badge: null,
@@ -98,6 +104,10 @@ export function ProductForm({
       />
 
       <ProductFeaturesField form={form} />
+      <div className="flex flex-col gap-2">
+        <label className="text-sm text-fg-muted">Features (English, one per line)</label>
+        <textarea rows={4} value={watch("featuresEn").join("\n")} onChange={(event) => setValue("featuresEn", event.target.value.split("\n").filter(Boolean), { shouldDirty: true })} className="w-full rounded-lg border border-ink-700 bg-ink-900 px-4 py-3 text-sm text-fg focus:border-brand focus:outline-none" />
+      </div>
       <ProductSizesField form={form} />
       <ProductColorsField form={form} />
       <ProductMetaFields form={form} />

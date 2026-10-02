@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidateTag } from "next/cache";
+import { updateTag } from "next/cache";
 import { requireAdmin, actionErrorMessage } from "@/lib/auth/requireAdmin";
 import { getSettings } from "@/lib/queries/settings";
 import { productFormSchema, type ProductFormValues } from "@/lib/validation/product";
@@ -24,13 +24,16 @@ function parseProductForm(input: unknown) {
 function toRow(data: ReturnType<typeof parseProductForm>, brand: string) {
   return {
     name: data.name,
+    name_en: data.nameEn || null,
     slug: data.slug,
     brand,
     category_id: data.categoryId,
     price: data.price,
     original_price: data.originalPrice,
     description: data.description,
+    description_en: data.descriptionEn || null,
     features: data.features,
+    features_en: data.featuresEn,
     sizes: data.sizes,
     colors: data.colors,
     badge: data.badge,
@@ -49,7 +52,7 @@ export async function createProduct(input: unknown): Promise<ActionResult> {
     const { error } = await supabase.from("veloce_products").insert(toRow(data, settings.store_name));
     if (error) throw new Error(error.message);
 
-    revalidateTag("products", "max");
+    updateTag("products");
     return { success: true };
   } catch (error) {
     return { success: false, error: actionErrorMessage(error) };
@@ -73,7 +76,7 @@ export async function updateProduct(productId: string, input: unknown): Promise<
       .eq("id", productId);
     if (error) throw new Error(error.message);
 
-    revalidateTag("products", "max");
+    updateTag("products");
     return { success: true };
   } catch (error) {
     return { success: false, error: actionErrorMessage(error) };
@@ -92,7 +95,7 @@ export async function toggleProductPublish(
       .eq("id", productId);
     if (error) throw new Error(error.message);
 
-    revalidateTag("products", "max");
+    updateTag("products");
     return { success: true };
   } catch (error) {
     return { success: false, error: actionErrorMessage(error) };
@@ -126,7 +129,7 @@ export async function deleteProduct(productId: string): Promise<ActionResult> {
     const { error } = await supabase.from("veloce_products").delete().eq("id", productId);
     if (error) throw new Error(error.message);
 
-    revalidateTag("products", "max");
+    updateTag("products");
     return { success: true };
   } catch (error) {
     return { success: false, error: actionErrorMessage(error) };
@@ -141,6 +144,12 @@ export async function uploadProductImage(formData: FormData): Promise<UploadImag
     const path = formData.get("path");
     if (!(file instanceof File) || typeof path !== "string") {
       throw new Error("Thiếu dữ liệu ảnh.");
+    }
+    if (!/^products\/[a-z0-9-]+-[1-3]\.(png|jpg|jpeg|webp)$/.test(path)) {
+      throw new Error("Đường dẫn ảnh sản phẩm không hợp lệ.");
+    }
+    if (file.size > 5 * 1024 * 1024 || !["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
+      throw new Error("Ảnh phải là PNG, JPG hoặc WebP và nhỏ hơn 5 MB.");
     }
 
     const { error } = await supabase.storage

@@ -19,6 +19,6 @@ async function fetchSettings(): Promise<Settings> {
 }
 
 /** Cache theo tag "settings" — admin ghi xong gọi revalidateTag("settings") để làm mới. */
-export const getSettings = unstable_cache(fetchSettings, ["veloce-settings"], {
+export const getSettings = unstable_cache(fetchSettings, ["veloce-settings-v3"], {
   tags: ["settings"],
 });

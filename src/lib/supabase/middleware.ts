@@ -7,8 +7,9 @@ import type { Database } from "@/types/database";
  * khi chưa đăng nhập. Việc kiểm tra có phải admin (bảng veloce_admins) hay không
  * nằm ở trang /admin/dang-nhap, không nằm ở đây.
  */
-export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request });
+export async function updateSession(request: NextRequest, forwardedHeaders = request.headers) {
+  const nextResponse = () => NextResponse.next({ request: { headers: forwardedHeaders } });
+  let supabaseResponse = nextResponse();
 
   const supabase = createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -22,7 +23,7 @@ export async function updateSession(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value),
           );
-          supabaseResponse = NextResponse.next({ request });
+          supabaseResponse = nextResponse();
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options),
           );

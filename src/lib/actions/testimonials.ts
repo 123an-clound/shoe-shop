@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidateTag } from "next/cache";
+import { updateTag } from "next/cache";
 import { requireAdmin, actionErrorMessage } from "@/lib/auth/requireAdmin";
 import { testimonialFormSchema } from "@/lib/validation/testimonial";
 import type { ActionResult } from "@/lib/actions/products";
@@ -21,13 +21,15 @@ export async function createTestimonial(input: unknown): Promise<ActionResult> {
     const { error } = await supabase.from("veloce_testimonials").insert({
       name: data.name,
       role: data.role || null,
+      role_en: data.roleEn || null,
       content: data.content,
+      content_en: data.contentEn || null,
       rating: data.rating,
       is_published: data.isPublished,
     });
     if (error) throw new Error(error.message);
 
-    revalidateTag("testimonials", "max");
+    updateTag("testimonials");
     return { success: true };
   } catch (error) {
     return { success: false, error: actionErrorMessage(error) };
@@ -44,14 +46,16 @@ export async function updateTestimonial(id: string, input: unknown): Promise<Act
       .update({
         name: data.name,
         role: data.role || null,
+        role_en: data.roleEn || null,
         content: data.content,
+        content_en: data.contentEn || null,
         rating: data.rating,
         is_published: data.isPublished,
       })
       .eq("id", id);
     if (error) throw new Error(error.message);
 
-    revalidateTag("testimonials", "max");
+    updateTag("testimonials");
     return { success: true };
   } catch (error) {
     return { success: false, error: actionErrorMessage(error) };
@@ -64,7 +68,7 @@ export async function deleteTestimonial(id: string): Promise<ActionResult> {
     const { error } = await supabase.from("veloce_testimonials").delete().eq("id", id);
     if (error) throw new Error(error.message);
 
-    revalidateTag("testimonials", "max");
+    updateTag("testimonials");
     return { success: true };
   } catch (error) {
     return { success: false, error: actionErrorMessage(error) };

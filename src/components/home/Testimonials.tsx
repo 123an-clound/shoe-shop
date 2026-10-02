@@ -8,6 +8,8 @@ import { Reveal } from "@/components/ui/Reveal";
 import { usePrefersReducedMotion } from "@/lib/hooks/useMediaQuery";
 import { cn } from "@/lib/cn";
 import type { Testimonial } from "@/lib/queries/testimonials";
+import type { Locale } from "@/lib/i18n/messages";
+import { getMessages } from "@/lib/i18n/messages";
 
 function initials(name: string) {
   return name
@@ -19,7 +21,8 @@ function initials(name: string) {
     .toUpperCase();
 }
 
-export function Testimonials({ testimonials }: { testimonials: Testimonial[] }) {
+export function Testimonials({ testimonials, locale = "vi" }: { testimonials: Testimonial[]; locale?: Locale }) {
+  const title = getMessages(locale).home.testimonials;
   const reducedMotion = usePrefersReducedMotion();
   const [plugins] = useState(() =>
     reducedMotion
@@ -34,7 +37,7 @@ export function Testimonials({ testimonials }: { testimonials: Testimonial[] }) 
     <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
       <Reveal>
         <h2 className="font-display text-3xl font-bold text-fg sm:text-4xl">
-          Khách hàng nói gì
+          {title}
         </h2>
       </Reveal>
 
@@ -62,20 +65,20 @@ export function Testimonials({ testimonials }: { testimonials: Testimonial[] }) 
                 </div>
 
                 <p className="flex-1 text-sm text-fg-muted">
-                  &ldquo;{testimonial.content}&rdquo;
+                  &ldquo;{locale === "en" ? testimonial.content_en || testimonial.content : testimonial.content}&rdquo;
                 </p>
 
                 <div className="flex items-center gap-3">
                   <div
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[image:var(--gradient-aurora)] text-sm font-medium text-ink-950"
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[image:var(--gradient-aurora)] text-sm font-medium text-on-brand"
                     aria-hidden="true"
                   >
                     {initials(testimonial.name)}
                   </div>
                   <div>
                     <p className="text-sm font-medium text-fg">{testimonial.name}</p>
-                    {testimonial.role && (
-                      <p className="text-xs text-fg-subtle">{testimonial.role}</p>
+                    {(locale === "en" ? testimonial.role_en || testimonial.role : testimonial.role) && (
+                      <p className="text-xs text-fg-subtle">{locale === "en" ? testimonial.role_en || testimonial.role : testimonial.role}</p>
                     )}
                   </div>
                 </div>

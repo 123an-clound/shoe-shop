@@ -1,4 +1,7 @@
+"use client";
+
 import { formatVND } from "@/lib/format";
+import { useLocaleContext } from "@/components/i18n/LocaleProvider";
 
 /** Thanh tiến trình freeship — ngưỡng đọc từ `settings.freeship_threshold` (mục 5.4 PLAN.md). */
 export function FreeshipProgress({
@@ -8,6 +11,7 @@ export function FreeshipProgress({
   subtotal: number;
   threshold: number;
 }) {
+  const { locale } = useLocaleContext();
   const remaining = Math.max(0, threshold - subtotal);
   const progress = threshold > 0 ? Math.min(100, (subtotal / threshold) * 100) : 100;
 
@@ -15,11 +19,10 @@ export function FreeshipProgress({
     <div className="rounded-lg border border-ink-700 bg-ink-900 p-3 text-xs">
       {remaining > 0 ? (
         <p className="text-fg-muted">
-          Mua thêm <span className="font-medium text-brand">{formatVND(remaining)}</span> nữa
-          để được miễn phí vận chuyển
+          {locale === "en" ? <>Add <span className="font-medium text-brand">{formatVND(remaining)}</span> to unlock free shipping</> : <>Mua thêm <span className="font-medium text-brand">{formatVND(remaining)}</span> nữa để được miễn phí vận chuyển</>}
         </p>
       ) : (
-        <p className="text-neon-lime">Đơn hàng của bạn được miễn phí vận chuyển</p>
+        <p className="text-neon-lime">{locale === "en" ? "Your order ships free" : "Đơn hàng của bạn được miễn phí vận chuyển"}</p>
       )}
       <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-ink-700">
         <div

@@ -20,13 +20,14 @@ function CategoryRow({
 }) {
   const router = useRouter();
   const [name, setName] = useState(category.name);
+  const [nameEn, setNameEn] = useState(category.name_en ?? "");
   const [slug, setSlug] = useState(category.slug);
   const [saving, setSaving] = useState(false);
-  const dirty = name !== category.name || slug !== category.slug;
+  const dirty = name !== category.name || nameEn !== (category.name_en ?? "") || slug !== category.slug;
 
   async function handleSave() {
     setSaving(true);
-    const result = await updateCategory(category.id, { name, slug });
+    const result = await updateCategory(category.id, { name, name_en: nameEn, slug });
     setSaving(false);
     if (!result.success) {
       toast.error(result.error);
@@ -37,9 +38,10 @@ function CategoryRow({
   }
 
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-ink-700 bg-ink-900 p-3">
-      <Input value={name} onChange={(e) => setName(e.target.value)} className="flex-1" />
-      <Input value={slug} onChange={(e) => setSlug(e.target.value)} className="flex-1" />
+    <div className="grid grid-cols-1 gap-3 rounded-lg border border-ink-700 bg-ink-900 p-3 sm:grid-cols-[1fr_1fr_1fr_auto_auto]">
+      <Input aria-label="Tên danh mục" value={name} onChange={(e) => setName(e.target.value)} className="min-w-0" />
+      <Input aria-label="Category name in English" value={nameEn} onChange={(e) => setNameEn(e.target.value)} className="min-w-0" />
+      <Input aria-label="Slug" value={slug} onChange={(e) => setSlug(e.target.value)} className="min-w-0" />
       {dirty && (
         <Button type="button" variant="glass" size="md" disabled={saving} onClick={handleSave}>
           {saving ? "Đang lưu..." : "Lưu"}
@@ -60,13 +62,14 @@ function CategoryRow({
 export function CategoriesManager({ categories }: { categories: Category[] }) {
   const router = useRouter();
   const [newName, setNewName] = useState("");
+  const [newNameEn, setNewNameEn] = useState("");
   const [creating, setCreating] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
 
   async function handleCreate() {
     if (!newName.trim()) return;
     setCreating(true);
-    const result = await createCategory({ name: newName, slug: slugify(newName) });
+    const result = await createCategory({ name: newName, name_en: newNameEn, slug: slugify(newName) });
     setCreating(false);
     if (!result.success) {
       toast.error(result.error);
@@ -74,6 +77,7 @@ export function CategoriesManager({ categories }: { categories: Category[] }) {
     }
     toast.success("Đã thêm danh mục");
     setNewName("");
+    setNewNameEn("");
     router.refresh();
   }
 
@@ -95,13 +99,14 @@ export function CategoriesManager({ categories }: { categories: Category[] }) {
         <CategoryRow key={category.id} category={category} onDeleteRequest={setDeleteTarget} />
       ))}
 
-      <div className="flex items-center gap-3 rounded-lg border border-dashed border-ink-700 p-3">
+      <div className="grid grid-cols-1 gap-3 rounded-lg border border-dashed border-ink-700 p-3 sm:grid-cols-[1fr_1fr_auto]">
         <Input
           placeholder="Tên danh mục mới"
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
           className="flex-1"
         />
+        <Input placeholder="English category name" value={newNameEn} onChange={(e) => setNewNameEn(e.target.value)} className="min-w-0" />
         <Button type="button" variant="glass" disabled={creating} onClick={handleCreate}>
           <Plus className="h-4 w-4" aria-hidden="true" />
           Thêm

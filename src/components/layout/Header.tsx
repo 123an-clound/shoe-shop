@@ -1,20 +1,23 @@
 "use client";
 
-import Link from "next/link";
 import { ShoppingBag } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/cn";
 import { MobileMenu } from "@/components/layout/MobileMenu";
 import { useCartHydrated, useCartStore } from "@/store/cart";
-
-const NAV_ITEMS = [
-  { href: "/", label: "Trang chủ" },
-  { href: "/san-pham", label: "Sản phẩm" },
-  { href: "/ve-chung-toi", label: "Về chúng tôi" },
-  { href: "/lien-he", label: "Liên hệ" },
-];
+import { LocaleLink } from "@/components/i18n/LocaleLink";
+import { LanguageSwitch } from "@/components/i18n/LanguageSwitch";
+import { ThemeToggle } from "@/components/i18n/ThemeToggle";
+import { useLocaleContext } from "@/components/i18n/LocaleProvider";
 
 export function Header({ storeName }: { storeName: string }) {
+  const { messages } = useLocaleContext();
+  const navItems = [
+    { href: "/", label: messages.nav.home },
+    { href: "/san-pham", label: messages.nav.products },
+    { href: "/ve-chung-toi", label: messages.nav.about },
+    { href: "/lien-he", label: messages.nav.contact },
+  ];
   const [scrolled, setScrolled] = useState(false);
   const hydrated = useCartHydrated();
   const itemCount = useCartStore((state) =>
@@ -51,31 +54,32 @@ export function Header({ storeName }: { storeName: string }) {
       )}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link
+        <LocaleLink
           href="/"
           className="font-display text-xl font-bold tracking-tight text-fg"
         >
           {storeName}
-        </Link>
+        </LocaleLink>
 
         <nav className="hidden items-center gap-8 md:flex">
-          {NAV_ITEMS.map((item) => (
-            <Link
+          {navItems.map((item) => (
+            <LocaleLink
               key={item.href}
               href={item.href}
               className="text-sm text-fg-muted transition-colors hover:text-fg"
             >
               {item.label}
-            </Link>
+            </LocaleLink>
           ))}
         </nav>
 
         <div className="flex items-center gap-2">
+          <div className="hidden items-center gap-2 sm:flex"><LanguageSwitch /><ThemeToggle /></div>
           <button
             id="header-cart-icon"
             type="button"
             onClick={openCart}
-            aria-label={`Mở giỏ hàng${hydrated && itemCount > 0 ? `, ${itemCount} sản phẩm` : ""}`}
+            aria-label={`${messages.controls.openCart}${hydrated && itemCount > 0 ? `, ${itemCount}` : ""}`}
             className="relative flex h-11 w-11 items-center justify-center rounded-full text-fg transition-colors hover:bg-white/5"
           >
             <ShoppingBag
@@ -83,12 +87,12 @@ export function Header({ storeName }: { storeName: string }) {
               aria-hidden="true"
             />
             {hydrated && itemCount > 0 && (
-              <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-medium tabular-nums text-ink-950">
+              <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-medium tabular-nums text-on-brand">
                 {itemCount}
               </span>
             )}
           </button>
-          <MobileMenu storeName={storeName} navItems={NAV_ITEMS} />
+          <MobileMenu storeName={storeName} navItems={navItems} />
         </div>
       </div>
     </header>

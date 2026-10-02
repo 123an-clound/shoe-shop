@@ -2,7 +2,7 @@
 
 import { useState, type MouseEvent } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { LocaleLink } from "@/components/i18n/LocaleLink";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -13,8 +13,8 @@ import { CheckoutSummary } from "@/components/checkout/CheckoutSummary";
 import { checkoutFormSchema, type CheckoutFormValues } from "@/lib/validation/order";
 import { placeOrder } from "@/lib/actions/orders";
 import { useCartStore } from "@/store/cart";
-
-const STEPS = ["Thông tin", "Giao hàng", "Xác nhận"];
+import { useLocaleContext } from "@/components/i18n/LocaleProvider";
+import { localizedHref } from "@/lib/i18n/messages";
 
 const STEP_FIELDS: (keyof CheckoutFormValues)[][] = [
   ["customerName", "customerPhone", "customerEmail"],
@@ -23,12 +23,15 @@ const STEP_FIELDS: (keyof CheckoutFormValues)[][] = [
 ];
 
 export function CheckoutForm() {
+  const { locale, messages } = useLocaleContext();
+  const copy = messages.checkout;
   const router = useRouter();
   const items = useCartStore((state) => state.items);
   const clearCart = useCartStore((state) => state.clear);
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+  const steps = [...copy.steps];
 
   const {
     register,
@@ -52,12 +55,12 @@ export function CheckoutForm() {
   async function goNext(event: MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
     const valid = await trigger(STEP_FIELDS[step]);
-    if (valid) setStep((s) => Math.min(STEPS.length - 1, s + 1));
+    if (valid) setStep((s) => Math.min(steps.length - 1, s + 1));
   }
 
   async function onSubmit(values: CheckoutFormValues) {
     if (items.length === 0) {
-      setServerError("Giỏ hàng đang trống.");
+      setServerError(copy.errorEmpty);
       return;
     }
 
@@ -85,39 +88,37 @@ export function CheckoutForm() {
 
     clearCart();
     router.push(
-      `/thanh-toan/thanh-cong?ma=${encodeURIComponent(result.orderCode)}&tong=${result.orderTotal}`,
+      localizedHref(`/thanh-toan/thanh-cong?ma=${encodeURIComponent(result.orderCode)}&tong=${result.orderTotal}`, locale),
     );
   }
 
   if (items.length === 0) {
     return (
       <div className="py-16 text-center text-fg-muted">
-        Giỏ hàng đang trống.{" "}
-        <Link href="/san-pham" className="text-brand hover:underline">
-          Tiếp tục mua sắm
-        </Link>
+        {copy.empty}{" "}
+        <LocaleLink href="/san-pham" className="text-brand hover:underline">{messages.cart.continue}</LocaleLink>
       </div>
     );
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="mx-auto max-w-xl">
-      <CheckoutSteps steps={STEPS} current={step} />
+      <CheckoutSteps steps={steps} current={step} />
 
       {step === 0 && (
         <div className="flex flex-col gap-4">
           <Input
-            label="Họ và tên"
+            label={copy.name}
             error={errors.customerName?.message}
             {...register("customerName")}
           />
           <Input
-            label="Số điện thoại"
+            label={copy.phone}
             error={errors.customerPhone?.message}
             {...register("customerPhone")}
           />
           <Input
-            label="Email (không bắt buộc)"
+            label={copy.email}
             type="email"
             error={errors.customerEmail?.message}
             {...register("customerEmail")}
@@ -128,17 +129,17 @@ export function CheckoutForm() {
       {step === 1 && (
         <div className="flex flex-col gap-4">
           <Input
-            label="Địa chỉ giao hàng"
+            label={copy.address}
             error={errors.address?.message}
             {...register("address")}
           />
           <Input
-            label="Ghi chú (không bắt buộc)"
+            label={copy.note}
             error={errors.note?.message}
             {...register("note")}
           />
           <Input
-            label="Mã giảm giá (nếu có)"
+            label={copy.coupon}
             error={errors.couponCode?.message}
             {...register("couponCode")}
           />
@@ -152,19 +153,19 @@ export function CheckoutForm() {
       <div className="mt-8 flex items-center justify-between gap-4">
         {step > 0 ? (
           <Button type="button" variant="ghost" onClick={() => setStep((s) => s - 1)}>
-            Quay lại
+            {copy.back}
           </Button>
         ) : (
           <span />
         )}
 
-        {step < STEPS.length - 1 ? (
+        {step < steps.length - 1 ? (
           <Button type="button" onClick={goNext}>
-            Tiếp tục
+            {copy.next}
           </Button>
         ) : (
           <Button type="submit" disabled={submitting}>
-            {submitting ? "Đang đặt hàng..." : "Đặt hàng"}
+            {submitting ? copy.submitting : copy.placeOrder}
           </Button>
         )}
       </div>

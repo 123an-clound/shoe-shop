@@ -6,6 +6,14 @@
   --brand-secondary: #d946ef; /* fuchsia */
   --brand-accent: #22d3ee; /* cyan */
 
+  --surface-950: #07060d;
+  --surface-900: #0d0b18;
+  --surface-800: #151226;
+  --surface-700: #1f1a35;
+  --text-primary: #f4f2ff;
+  --text-muted: #a5a0c0;
+  --text-subtle: #6b6690;
+
   --gradient-aurora: linear-gradient(
     135deg,
     var(--brand-primary) 0%,
@@ -16,6 +24,31 @@
     color-mix(in oklab, var(--brand-primary) 55%, transparent);
 }
 
+:root[data-theme="light"] {
+  color-scheme: light;
+  --surface-950: #f5f7fa;
+  --surface-900: #ffffff;
+  --surface-800: #e9edf2;
+  --surface-700: #d5dce5;
+  --text-primary: #141923;
+  --text-muted: #465164;
+  --text-subtle: #5f6b7c;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+.admin-shell {
+  --surface-950: #07060d;
+  --surface-900: #0d0b18;
+  --surface-800: #151226;
+  --surface-700: #1f1a35;
+  --text-primary: #f4f2ff;
+  --text-muted: #a5a0c0;
+  --text-subtle: #6b6690;
+}
+
 /* ⚠️ BẮT BUỘC dùng `@theme inline` cho tầng màu thương hiệu.
    Thiếu từ khoá `inline`, Tailwind resolve ra mã hex ngay lúc build và
    admin đổi màu trong database sẽ không có tác dụng gì lên giao diện. */
@@ -23,26 +56,23 @@
   --color-brand: var(--brand-primary);
   --color-brand-2: var(--brand-secondary);
   --color-brand-3: var(--brand-accent);
+  --color-ink-950: var(--surface-950);
+  --color-ink-900: var(--surface-900);
+  --color-ink-800: var(--surface-800);
+  --color-ink-700: var(--surface-700);
+  --color-fg: var(--text-primary);
+  --color-fg-muted: var(--text-muted);
+  --color-fg-subtle: var(--text-subtle);
+  --color-on-brand: #07060d;
 }
 
 @theme {
-  /* Nền — tối, hơi ngả tím, KHÔNG dùng #000 thuần */
-  --color-ink-950: #07060d; /* nền trang */
-  --color-ink-900: #0d0b18; /* nền section xen kẽ */
-  --color-ink-800: #151226; /* nền card đặc */
-  --color-ink-700: #1f1a35; /* border, divider */
-
-  /* Chữ */
-  --color-fg: #f4f2ff;
-  --color-fg-muted: #a5a0c0;
-  --color-fg-subtle: #6b6690;
-
   /* Điểm nhấn cố định — không cho admin đổi */
   --color-neon-lime: #a3e635; /* chỉ dùng cho badge "SALE" / "NEW" */
 
   /* Font — sinh bởi next/font trong layout.tsx */
   --font-display: var(--font-space-grotesk), system-ui, sans-serif;
-  --font-body: var(--font-inter), system-ui, sans-serif;
+  --font-body: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 
   /* Bo góc */
   --radius-card: 20px;
@@ -149,7 +179,7 @@
   }
 
   html {
-    color-scheme: dark;
+    color-scheme: light dark;
   }
 
   body {
@@ -170,10 +200,6 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* CustomCursor.tsx tự bật/tắt class này — không dùng media query để loại trừ được /admin */
-  body.cursor-hidden {
-    cursor: none;
-  }
 }
 
 @layer utilities {
@@ -181,12 +207,24 @@
   .glass {
     background: linear-gradient(
       160deg,
-      rgba(255, 255, 255, 0.1),
-      rgba(255, 255, 255, 0.02)
+      color-mix(in srgb, var(--color-ink-900) 88%, transparent),
+      color-mix(in srgb, var(--color-ink-800) 76%, transparent)
     );
-    backdrop-filter: blur(16px) saturate(140%);
-    -webkit-backdrop-filter: blur(16px) saturate(140%);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid color-mix(in srgb, var(--color-ink-700) 78%, transparent);
+  }
+
+  @supports (backdrop-filter: blur(1px)) {
+    .glass {
+      backdrop-filter: blur(10px) saturate(120%);
+      -webkit-backdrop-filter: blur(10px) saturate(120%);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .glass {
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
   }
 
   /* Viền gradient chạy sáng, xoay khi hover */
@@ -242,5 +280,11 @@
     opacity: 0.035;
     mix-blend-mode: overlay;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  @media (max-width: 640px) {
+    .noise::after {
+      display: none;
+    }
   }
 }

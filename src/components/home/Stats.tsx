@@ -1,18 +1,21 @@
 import { Reveal } from "@/components/ui/Reveal";
 import { CountUp } from "@/components/ui/CountUp";
 import type { Product } from "@/lib/queries/products";
+import type { Locale } from "@/lib/i18n/messages";
+import { getMessages } from "@/lib/i18n/messages";
 
-export function Stats({ products }: { products: Product[] }) {
+export function Stats({ products, locale }: { products: Product[]; locale: Locale }) {
+  const copy = getMessages(locale).home;
   const avgRating =
     products.length > 0
       ? products.reduce((sum, p) => sum + p.rating, 0) / products.length
       : 0;
 
   const items = [
-    { to: products.length, decimals: 0, suffix: "", caption: "Mẫu giày đang bán" },
-    { to: avgRating, decimals: 1, suffix: "/5", caption: "Đánh giá trung bình" },
-    { to: 30, decimals: 0, suffix: " ngày", caption: "Đổi trả miễn phí" },
-    { to: 63, decimals: 0, suffix: " tỉnh thành", caption: "Giao hàng toàn quốc" },
+    { to: products.length, decimals: 0, suffix: "", caption: copy.statsProducts },
+    { to: avgRating, decimals: 1, suffix: "/5", caption: copy.statsRating },
+    { to: 30, decimals: 0, suffix: locale === "en" ? " days" : " ngày", caption: copy.statsReturns },
+    { to: 63, decimals: 0, suffix: "", caption: copy.statsShipping },
   ];
 
   return (

@@ -10,6 +10,7 @@ export const productColorSchema = z.object({
 
 export const productFormSchema = z.object({
   name: z.string().min(2, "Nhập tên sản phẩm"),
+  nameEn: z.string().optional(),
   slug: z
     .string()
     .min(2, "Slug không hợp lệ")
@@ -18,7 +19,9 @@ export const productFormSchema = z.object({
   price: z.number().int().min(1000, "Giá không hợp lệ"),
   originalPrice: z.number().int().min(1000, "Giá gốc không hợp lệ").nullable(),
   description: z.string().min(10, "Mô tả cần ít nhất 10 ký tự"),
+  descriptionEn: z.string().optional(),
   features: z.array(z.string().min(1)),
+  featuresEn: z.array(z.string()),
   sizes: z.array(z.number().int()).min(1, "Chọn ít nhất 1 size"),
   colors: z.array(productColorSchema).min(1, "Thêm ít nhất 1 màu"),
   badge: z.enum(PRODUCT_BADGES).nullable(),

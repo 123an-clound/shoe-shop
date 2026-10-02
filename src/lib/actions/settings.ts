@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { requireAdmin, actionErrorMessage } from "@/lib/auth/requireAdmin";
 import { settingsFormSchema } from "@/lib/validation/settings";
 import type { ActionResult } from "@/lib/actions/products";
@@ -20,8 +20,22 @@ export async function updateSettings(input: unknown): Promise<ActionResult> {
       .update({
         store_name: data.storeName,
         slogan: data.slogan,
+        slogan_en: data.sloganEn || null,
         hero_headline: data.heroHeadline || null,
         hero_subheadline: data.heroSubheadline || null,
+        hero_headline_en: data.heroHeadlineEn || null,
+        hero_subheadline_en: data.heroSubheadlineEn || null,
+        hero_cta_label_vi: data.heroCtaLabelVi || null,
+        hero_cta_label_en: data.heroCtaLabelEn || null,
+        announcement_enabled: data.announcementEnabled,
+        announcement_text_vi: data.announcementTextVi || null,
+        announcement_text_en: data.announcementTextEn || null,
+        homepage_sections: data.homepageSections,
+        seo_title_vi: data.seoTitleVi || null,
+        seo_title_en: data.seoTitleEn || null,
+        seo_description_vi: data.seoDescriptionVi || null,
+        seo_description_en: data.seoDescriptionEn || null,
+        og_image_url: data.ogImageUrl || null,
         logo_url: data.logoUrl || null,
         hero_image_url: data.heroImageUrl || null,
         color_primary: data.colorPrimary,
@@ -43,7 +57,7 @@ export async function updateSettings(input: unknown): Promise<ActionResult> {
     if (error) throw new Error(error.message);
 
     // Tên cửa hàng + màu ảnh hưởng toàn site — làm mới cache + toàn bộ layout gốc (mục 4.9 PLAN.md).
-    revalidateTag("settings", "max");
+    updateTag("settings");
     revalidatePath("/", "layout");
 
     return { success: true };
@@ -58,8 +72,11 @@ export async function uploadSettingsImage(formData: FormData): Promise<UploadIma
 
     const file = formData.get("file");
     const path = formData.get("path");
-    if (!(file instanceof File) || typeof path !== "string") {
+    if (!(file instanceof File) || typeof path !== "string" || !/^branding\/(logo|hero)\.(png|jpg|webp)$/.test(path)) {
       throw new Error("Thiếu dữ liệu ảnh.");
+    }
+    if (file.size > 5 * 1024 * 1024 || !["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
+      throw new Error("Ảnh phải là PNG, JPG hoặc WebP và nhỏ hơn 5 MB.");
     }
 
     const { error } = await supabase.storage

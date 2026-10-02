@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/Badge";
 import { TiltCard } from "@/components/ui/TiltCard";
 import { formatVND } from "@/lib/format";
 import type { Product } from "@/lib/queries/products";
+import type { Locale } from "@/lib/i18n/messages";
+import { getMessages, localizedHref } from "@/lib/i18n/messages";
 
 const BADGE_LABEL: Record<string, string> = {
   NEW: "Mới",
@@ -13,7 +15,9 @@ const BADGE_LABEL: Record<string, string> = {
   LIMITED: "Giới hạn",
 };
 
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({ product, locale = "vi" }: { product: Product; locale?: Locale }) {
+  const copy = getMessages(locale).product;
+  const name = locale === "en" ? product.name_en || product.name : product.name;
   const [primaryImage, secondaryImage] = product.images;
   const discountPercent = product.original_price
     ? Math.round((1 - product.price / product.original_price) * 100)
@@ -23,7 +27,7 @@ export function ProductCard({ product }: { product: Product }) {
 
   return (
     <Link
-      href={`/san-pham/${product.slug}`}
+      href={localizedHref(`/san-pham/${product.slug}`, locale)}
       className="group block rounded-[var(--radius-card)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950"
     >
       <TiltCard className="glass overflow-hidden rounded-[var(--radius-card)]">
@@ -32,9 +36,9 @@ export function ProductCard({ product }: { product: Product }) {
             <>
               <Image
                 src={primaryImage}
-                alt={product.name}
+                alt={name}
                 fill
-                sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
                 className={
                   "object-cover transition-[opacity,transform] duration-300 ease-out group-hover:scale-105" +
                   (secondaryImage ? " group-hover:opacity-0" : "")
@@ -46,8 +50,8 @@ export function ProductCard({ product }: { product: Product }) {
                   alt=""
                   aria-hidden="true"
                   fill
-                  sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-                  className="object-cover opacity-0 transition-[opacity,transform] duration-300 ease-out group-hover:scale-105 group-hover:opacity-100"
+                  sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+                  className="hidden object-cover opacity-0 transition-[opacity,transform] duration-300 ease-out group-hover:scale-105 group-hover:opacity-100 lg:block"
                 />
               )}
             </>
@@ -59,7 +63,7 @@ export function ProductCard({ product }: { product: Product }) {
 
           <div className="absolute left-3 top-3 flex flex-col gap-1.5">
             {product.badge && (
-              <Badge tone="lime">{BADGE_LABEL[product.badge] ?? product.badge}</Badge>
+              <Badge tone="lime">{locale === "en" ? ({ NEW: "New", SALE: "Sale", HOT: "Bestseller", LIMITED: "Limited" }[product.badge] ?? product.badge) : BADGE_LABEL[product.badge] ?? product.badge}</Badge>
             )}
             {discountPercent !== null && discountPercent > 0 && (
               <Badge tone="brand">-{discountPercent}%</Badge>
@@ -68,14 +72,14 @@ export function ProductCard({ product }: { product: Product }) {
 
           {outOfStock && (
             <div className="absolute inset-0 flex items-center justify-center bg-ink-950/70">
-              <span className="text-sm font-medium text-fg">Tạm hết hàng</span>
+              <span className="text-sm font-medium text-fg">{copy.soldOut}</span>
             </div>
           )}
         </div>
 
         <div className="flex flex-col gap-1 p-4">
           <p className="text-xs text-fg-subtle">{product.brand}</p>
-          <h3 className="font-display text-base font-medium text-fg">{product.name}</h3>
+          <h3 className="font-display text-base font-medium text-fg">{name}</h3>
 
           <div className="mt-1 flex items-center gap-1 text-xs text-fg-muted">
             <Star
@@ -98,7 +102,7 @@ export function ProductCard({ product }: { product: Product }) {
           </div>
 
           {lowStock && (
-            <p className="mt-1 text-xs text-brand-2">Chỉ còn {product.stock} đôi</p>
+            <p className="mt-1 text-xs text-brand-2">{copy.lowStock.replace("{{count}}", String(product.stock))}</p>
           )}
         </div>
       </TiltCard>

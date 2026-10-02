@@ -10,9 +10,9 @@ export function AuroraBackground() {
       aria-hidden="true"
       className="pointer-events-none fixed inset-0 -z-10 overflow-hidden"
     >
-      <div className="absolute -left-[10%] -top-[10%] h-[60vmax] w-[60vmax] rounded-full bg-brand opacity-30 blur-[120px] motion-safe:animate-aurora-1" />
-      <div className="absolute -right-[15%] top-[5%] h-[55vmax] w-[55vmax] rounded-full bg-brand-2 opacity-25 blur-[120px] motion-safe:animate-aurora-2" />
-      <div className="absolute -bottom-[20%] left-[15%] h-[50vmax] w-[50vmax] rounded-full bg-brand-3 opacity-20 blur-[120px] motion-safe:animate-aurora-3" />
+      <div className="absolute -left-[10%] -top-[10%] h-[60vmax] w-[60vmax] rounded-full bg-brand opacity-30 blur-[80px] lg:blur-[120px] motion-safe:animate-aurora-1" />
+      <div className="absolute -right-[15%] top-[5%] h-[55vmax] w-[55vmax] rounded-full bg-brand-2 opacity-25 blur-[80px] lg:blur-[120px] motion-safe:animate-aurora-2" />
+      <div className="absolute -bottom-[20%] left-[15%] h-[50vmax] w-[50vmax] rounded-full bg-brand-3 opacity-20 blur-[80px] lg:blur-[120px] motion-safe:animate-aurora-3" />
     </div>
   );
 }

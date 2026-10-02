@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidateTag } from "next/cache";
+import { updateTag } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { placeOrderInputSchema } from "@/lib/validation/order";
 
@@ -49,8 +49,7 @@ export async function placeOrder(input: unknown): Promise<PlaceOrderResult> {
   }
 
   // Tồn kho vừa đổi — làm mới cache sản phẩm (mục 4.9 PLAN.md). Dự án không bật
-  // Cache Components nên dùng revalidateTag kiểu cũ (2 tham số bắt buộc ở Next 16).
-  revalidateTag("products", "max");
+  updateTag("products");
 
   return { success: true, orderCode: row.order_code, orderTotal: row.order_total };
 }

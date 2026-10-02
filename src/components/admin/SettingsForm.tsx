@@ -25,8 +25,22 @@ export function SettingsForm({ settings }: { settings: Settings }) {
     defaultValues: {
       storeName: settings.store_name,
       slogan: settings.slogan,
+      sloganEn: settings.slogan_en ?? "",
       heroHeadline: settings.hero_headline ?? "",
       heroSubheadline: settings.hero_subheadline ?? "",
+      heroHeadlineEn: settings.hero_headline_en ?? "",
+      heroSubheadlineEn: settings.hero_subheadline_en ?? "",
+      heroCtaLabelVi: settings.hero_cta_label_vi ?? "",
+      heroCtaLabelEn: settings.hero_cta_label_en ?? "",
+      announcementEnabled: settings.announcement_enabled,
+      announcementTextVi: settings.announcement_text_vi ?? "",
+      announcementTextEn: settings.announcement_text_en ?? "",
+      homepageSections: Array.isArray(settings.homepage_sections) ? settings.homepage_sections.filter((item): item is string => typeof item === "string") : ["hero", "marquee", "categories", "featured", "story", "stats", "testimonials", "newsletter"],
+      seoTitleVi: settings.seo_title_vi ?? "",
+      seoTitleEn: settings.seo_title_en ?? "",
+      seoDescriptionVi: settings.seo_description_vi ?? "",
+      seoDescriptionEn: settings.seo_description_en ?? "",
+      ogImageUrl: settings.og_image_url ?? "",
       logoUrl: settings.logo_url ?? "",
       heroImageUrl: settings.hero_image_url ?? "",
       colorPrimary: settings.color_primary,
@@ -50,6 +64,8 @@ export function SettingsForm({ settings }: { settings: Settings }) {
   const colorAccent = watch("colorAccent");
   const logoUrl = watch("logoUrl");
   const heroImageUrl = watch("heroImageUrl");
+  const homepageSections = watch("homepageSections");
+  const sectionOptions = [["hero", "Hero"], ["marquee", "Dải danh mục"], ["categories", "Danh mục"], ["featured", "Sản phẩm nổi bật"], ["story", "Câu chuyện thương hiệu"], ["stats", "Thống kê"], ["testimonials", "Đánh giá khách hàng"], ["newsletter", "Đăng ký nhận tin"]] as const;
 
   async function onSubmit(values: SettingsFormValues) {
     const result = await updateSettings(values);
@@ -68,9 +84,23 @@ export function SettingsForm({ settings }: { settings: Settings }) {
           <Input label="Tên cửa hàng" error={errors.storeName?.message} {...register("storeName")} />
           <Input label="Khẩu hiệu" error={errors.slogan?.message} {...register("slogan")} />
         </div>
+        <Input label="Slogan tiếng Anh" {...register("sloganEn")} />
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Input label="Tiêu đề Hero" {...register("heroHeadline")} />
           <Input label="Mô tả phụ Hero" {...register("heroSubheadline")} />
+        </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Input label="Hero headline (English)" {...register("heroHeadlineEn")} />
+          <Input label="Hero description (English)" {...register("heroSubheadlineEn")} />
+        </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Input label="Nhãn nút Hero (VI)" {...register("heroCtaLabelVi")} />
+          <Input label="Hero button label (EN)" {...register("heroCtaLabelEn")} />
+        </div>
+        <label className="flex items-center gap-3 text-sm text-fg"><input type="checkbox" className="accent-brand" {...register("announcementEnabled")} /> Hiện thông báo đầu trang</label>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Input label="Thông báo (VI)" {...register("announcementTextVi")} />
+          <Input label="Announcement (EN)" {...register("announcementTextEn")} />
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <BrandingImageField
@@ -86,6 +116,30 @@ export function SettingsForm({ settings }: { settings: Settings }) {
             onChange={(url) => setValue("heroImageUrl", url)}
           />
         </div>
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="font-display text-lg font-bold text-fg">Nội dung trang chủ</h2>
+        <p className="text-sm text-fg-muted">Chọn các khối cần hiển thị. Thứ tự hiện theo danh sách cấu hình.</p>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {[...homepageSections, ...sectionOptions.map(([key]) => key).filter((key) => !homepageSections.includes(key))].map((key, index, ordered) => {
+            const label = sectionOptions.find(([option]) => option === key)?.[1] ?? key;
+            const enabled = homepageSections.includes(key);
+            return <div key={key} className="flex items-center gap-2 rounded-lg border border-ink-700 p-3 text-sm">
+              <input aria-label={`Hiện ${label}`} type="checkbox" checked={enabled} onChange={(event) => setValue("homepageSections", event.target.checked ? [...homepageSections, key] : homepageSections.filter((item) => item !== key), { shouldDirty: true })} className="accent-brand" />
+              <span className="flex-1">{label}</span>
+              <button type="button" aria-label={`Chuyển ${label} lên`} disabled={index === 0} onClick={() => { const next = [...ordered]; [next[index - 1], next[index]] = [next[index]!, next[index - 1]!]; setValue("homepageSections", next.filter((item) => homepageSections.includes(item)), { shouldDirty: true }); }} className="h-8 w-8 rounded border border-ink-700 disabled:opacity-30">↑</button>
+              <button type="button" aria-label={`Chuyển ${label} xuống`} disabled={index === ordered.length - 1} onClick={() => { const next = [...ordered]; [next[index + 1], next[index]] = [next[index]!, next[index + 1]!]; setValue("homepageSections", next.filter((item) => homepageSections.includes(item)), { shouldDirty: true }); }} className="h-8 w-8 rounded border border-ink-700 disabled:opacity-30">↓</button>
+            </div>;
+          })}
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="font-display text-lg font-bold text-fg">SEO &amp; chia sẻ</h2>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2"><Input label="Tiêu đề SEO (VI)" {...register("seoTitleVi")} /><Input label="SEO title (EN)" {...register("seoTitleEn")} /></div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2"><Input label="Mô tả SEO (VI)" {...register("seoDescriptionVi")} /><Input label="SEO description (EN)" {...register("seoDescriptionEn")} /></div>
+        <Input label="Ảnh chia sẻ (URL)" {...register("ogImageUrl")} />
       </section>
 
       <section className="flex flex-col gap-4">

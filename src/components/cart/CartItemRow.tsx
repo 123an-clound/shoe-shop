@@ -4,25 +4,28 @@ import Image from "next/image";
 import { Minus, Plus, X } from "lucide-react";
 import { useCartStore, type CartItem } from "@/store/cart";
 import { formatVND } from "@/lib/format";
+import { useLocaleContext } from "@/components/i18n/LocaleProvider";
 
 export function CartItemRow({ item }: { item: CartItem }) {
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const removeItem = useCartStore((state) => state.removeItem);
+  const { locale, messages } = useLocaleContext();
+  const displayName = locale === "en" ? item.nameEn || item.name : item.name;
 
   return (
     <li className="flex gap-3">
       <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-ink-800">
         {item.image && (
-          <Image src={item.image} alt={item.name} fill sizes="80px" className="object-cover" />
+          <Image src={item.image} alt={displayName} fill sizes="80px" className="object-cover" />
         )}
       </div>
 
       <div className="flex flex-1 flex-col gap-1">
         <div className="flex items-start justify-between gap-2">
-          <p className="text-sm font-medium text-fg">{item.name}</p>
+          <p className="text-sm font-medium text-fg">{displayName}</p>
           <button
             type="button"
-            aria-label={`Xóa ${item.name} khỏi giỏ`}
+            aria-label={`${messages.cart.remove} ${displayName}`}
             onClick={() => removeItem(item.productId, item.size, item.color)}
             className="text-fg-subtle transition-colors hover:text-fg"
           >
@@ -31,14 +34,14 @@ export function CartItemRow({ item }: { item: CartItem }) {
         </div>
 
         <p className="text-xs text-fg-subtle">
-          {item.color} · Size {item.size}
+          {item.color} · {messages.product.size} {item.size}
         </p>
 
         <div className="mt-1 flex items-center justify-between">
           <div className="flex items-center rounded-lg border border-ink-700">
             <button
               type="button"
-              aria-label="Giảm số lượng"
+              aria-label={messages.cart.quantity}
               onClick={() =>
                 updateQuantity(item.productId, item.size, item.color, Math.max(1, item.quantity - 1))
               }
@@ -49,7 +52,7 @@ export function CartItemRow({ item }: { item: CartItem }) {
             <span className="w-6 text-center text-xs tabular-nums text-fg">{item.quantity}</span>
             <button
               type="button"
-              aria-label="Tăng số lượng"
+              aria-label={messages.cart.quantity}
               onClick={() =>
                 updateQuantity(item.productId, item.size, item.color, Math.min(10, item.quantity + 1))
               }

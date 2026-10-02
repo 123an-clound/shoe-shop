@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import { useEffect, useRef } from "react";
-import gsap from "gsap";
-import { usePrefersReducedMotion } from "@/lib/hooks/useMediaQuery";
+import { useMediaQuery, usePointerFine, usePrefersReducedMotion } from "@/lib/hooks/useMediaQuery";
+import type { Locale } from "@/lib/i18n/messages";
 
 type StoryImage = { url: string | null; alt: string };
 type StoryBlock = { heading: string; body: string };
@@ -17,14 +17,23 @@ type StoryBlock = { heading: string; body: string };
 export function ScrollStory({
   storeName,
   images,
+  locale = "vi",
 }: {
   storeName: string;
   images: StoryImage[];
+  locale?: Locale;
 }) {
   const sectionRef = useRef<HTMLElement>(null);
   const reducedMotion = usePrefersReducedMotion();
+  const pointerFine = usePointerFine();
+  const desktopViewport = useMediaQuery("(min-width: 1024px)");
+  const animateStory = pointerFine && desktopViewport && !reducedMotion;
 
-  const blocks: StoryBlock[] = [
+  const blocks: StoryBlock[] = locale === "en" ? [
+    { heading: "Materials chosen with care", body: `Durable leather, canvas and solid-molded rubber — every ${storeName} pair begins with thoughtfully selected materials.` },
+    { heading: "A fit made for your stride", body: "We refine each last through repeated fittings and add a comfortable midsole for your busiest days." },
+    { heading: "Made to go the distance", body: "Reliable stitching, light water resistance and hard-wearing rubber — a pair made to serve you for years." },
+  ] : [
     {
       heading: "Chất liệu chọn lọc kỹ càng",
       body: `Da thuộc, vải canvas bền và cao su đúc nguyên khối — mỗi đôi ${storeName} đều bắt đầu từ nguyên liệu tốt nhất có thể tìm được.`,
@@ -40,39 +49,57 @@ export function ScrollStory({
   ];
 
   useEffect(() => {
-    if (reducedMotion || !sectionRef.current) return;
+    if (!animateStory || !sectionRef.current) return;
 
-    const ctx = gsap.context(() => {
-      const textEls = gsap.utils.toArray<HTMLElement>(".story-text", sectionRef.current!);
-      const imageEls = gsap.utils.toArray<HTMLElement>(".story-image", sectionRef.current!);
+    let cancelled = false;
+    let revert: (() => void) | undefined;
 
-      gsap.set(textEls, { opacity: 0, y: 40 });
-      gsap.set(textEls[0], { opacity: 1, y: 0 });
-      gsap.set(imageEls, { opacity: 0 });
-      gsap.set(imageEls[0], { opacity: 1 });
+    async function setupStoryAnimation() {
+      const [{ default: gsap }, { ScrollTrigger }] = await Promise.all([
+        import("gsap"),
+        import("gsap/ScrollTrigger"),
+      ]);
+      if (cancelled || !sectionRef.current) return;
 
-      const timeline = gsap.timeline({
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top top",
-          end: "bottom bottom",
-          scrub: 1,
-        },
+      gsap.registerPlugin(ScrollTrigger);
+      const section = sectionRef.current;
+      const ctx = gsap.context(() => {
+        const textEls = gsap.utils.toArray<HTMLElement>(".story-text", section);
+        const imageEls = gsap.utils.toArray<HTMLElement>(".story-image", section);
+
+        gsap.set(textEls, { opacity: 0, y: 40 });
+        gsap.set(textEls[0], { opacity: 1, y: 0 });
+        gsap.set(imageEls, { opacity: 0 });
+        gsap.set(imageEls[0], { opacity: 1 });
+
+        const timeline = gsap.timeline({
+          scrollTrigger: {
+            trigger: section,
+            start: "top top",
+            end: "bottom bottom",
+            scrub: 1,
+          },
+        });
+
+        for (let i = 0; i < 2; i++) {
+          timeline
+            .to(textEls[i], { opacity: 0, y: -40, duration: 0.3 }, i)
+            .to(textEls[i + 1], { opacity: 1, y: 0, duration: 0.3 }, i + 0.1)
+            .to(imageEls[i], { opacity: 0, rotate: -8, duration: 0.3 }, i)
+            .to(imageEls[i + 1], { opacity: 1, rotate: 0, duration: 0.3 }, i + 0.1);
+        }
       });
+      revert = () => ctx.revert();
+    }
 
-      for (let i = 0; i < 2; i++) {
-        timeline
-          .to(textEls[i], { opacity: 0, y: -40, duration: 0.3 }, i)
-          .to(textEls[i + 1], { opacity: 1, y: 0, duration: 0.3 }, i + 0.1)
-          .to(imageEls[i], { opacity: 0, rotate: -8, duration: 0.3 }, i)
-          .to(imageEls[i + 1], { opacity: 1, rotate: 0, duration: 0.3 }, i + 0.1);
-      }
-    }, sectionRef);
+    void setupStoryAnimation();
+    return () => {
+      cancelled = true;
+      revert?.();
+    };
+  }, [animateStory]);
 
-    return () => ctx.revert();
-  }, [reducedMotion]);
-
-  if (reducedMotion) {
+  if (!animateStory) {
     return (
       <section className="mx-auto max-w-5xl px-4 py-20 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-16">

@@ -40,13 +40,13 @@ export function AdminSidebar({
   }
 
   return (
-    <aside className="flex h-screen w-64 shrink-0 flex-col border-r border-ink-700 bg-ink-900 p-4">
-      <div className="px-2 py-3">
-        <p className="font-display text-lg font-bold text-fg">{storeName}</p>
-        <p className="text-xs text-fg-subtle">Quản trị</p>
+    <aside className="sticky top-0 z-40 flex w-full shrink-0 flex-col border-b border-ink-700 bg-ink-900 p-3 md:h-screen md:w-64 md:border-b-0 md:border-r md:p-4">
+      <div className="flex items-center justify-between px-2 py-2 md:block md:py-3">
+        <div><p className="font-display text-base font-bold text-fg md:text-lg">{storeName}</p><p className="text-xs text-fg-subtle">Quản trị</p></div>
+        <button type="button" onClick={handleLogout} className="flex h-10 items-center gap-2 rounded-lg px-3 text-xs text-fg-muted hover:bg-white/5 hover:text-fg md:hidden"><LogOut className="h-4 w-4" aria-hidden="true" />Đăng xuất</button>
       </div>
 
-      <nav className="mt-4 flex flex-1 flex-col gap-1">
+      <nav aria-label="Điều hướng quản trị" className="mt-2 flex gap-1 overflow-x-auto pb-1 md:mt-4 md:flex-1 md:flex-col md:gap-1 md:overflow-visible md:pb-0">
         {NAV_ITEMS.map((item) => {
           const active =
             item.href === "/admin" ? pathname === "/admin" : pathname?.startsWith(item.href);
@@ -56,14 +56,14 @@ export function AdminSidebar({
               key={item.href}
               href={item.href}
               className={cn(
-                "relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors",
+                "relative flex shrink-0 items-center gap-2 rounded-lg px-3 py-2.5 text-xs transition-colors sm:text-sm md:gap-3",
                 active
                   ? "bg-brand/15 text-brand"
                   : "text-fg-muted hover:bg-white/5 hover:text-fg",
               )}
             >
               <Icon className="h-4 w-4" aria-hidden="true" />
-              {item.label}
+              <span>{item.label}</span>
               {item.href === "/admin/don-hang" && hasPendingOrders && (
                 <span
                   className="absolute right-3 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-red-500"
@@ -78,7 +78,7 @@ export function AdminSidebar({
       <button
         type="button"
         onClick={handleLogout}
-        className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-fg-muted transition-colors hover:bg-white/5 hover:text-fg"
+        className="hidden items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-fg-muted transition-colors hover:bg-white/5 hover:text-fg md:flex"
       >
         <LogOut className="h-4 w-4" aria-hidden="true" />
         Đăng xuất

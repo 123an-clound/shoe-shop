@@ -1,29 +1,30 @@
 import type { Metadata } from "next";
-import { Inter, Space_Grotesk } from "next/font/google";
+import { Space_Grotesk } from "next/font/google";
 import { Toaster } from "sonner";
 import { getSettings } from "@/lib/queries/settings";
-import { PageTransition } from "@/components/fx/PageTransition";
-import { CustomCursor } from "@/components/fx/CustomCursor";
+import { SITE_URL } from "@/lib/seo";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
   subsets: ["latin"],
-  weight: ["500", "700"],
-});
-
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
 });
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSettings();
+  const title = settings.seo_title_vi;
+  const description = settings.seo_description_vi;
   return {
-    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
-    title: { default: settings.store_name, template: `%s — ${settings.store_name}` },
-    description: settings.slogan,
+    metadataBase: SITE_URL,
+    title: { default: title || settings.store_name, template: `%s — ${settings.store_name}` },
+    description: description || settings.slogan,
+    openGraph: {
+      title: title || settings.store_name,
+      description: description || settings.slogan,
+      images: [settings.og_image_url || settings.hero_image_url].filter((image): image is string => Boolean(image)),
+      locale: "vi_VN",
+      type: "website",
+    },
   };
 }
 
@@ -40,7 +41,8 @@ export default async function RootLayout({
   return (
     <html
       lang="vi"
-      className={`${spaceGrotesk.variable} ${inter.variable} h-full antialiased`}
+      data-theme="dark"
+      className={`${spaceGrotesk.variable} h-full antialiased`}
     >
       <head>
         {/* Tầng màu thương hiệu — đọc từ veloce_settings, ghi đè giá trị dự phòng trong globals.css */}
@@ -49,12 +51,15 @@ export default async function RootLayout({
             __html: `:root{--brand-primary:${settings.color_primary};--brand-secondary:${settings.color_secondary};--brand-accent:${settings.color_accent};}`,
           }}
         />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{const t=localStorage.getItem("veloce-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch{}`,
+          }}
+        />
       </head>
-      <body className="min-h-full">
+      <body className="min-h-full bg-ink-950 text-fg">
         {children}
-        <CustomCursor />
-        <PageTransition />
-        <Toaster theme="dark" richColors position="bottom-right" />
+        <Toaster theme="system" richColors position="bottom-right" />
       </body>
     </html>
   );

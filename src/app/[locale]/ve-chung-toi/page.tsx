@@ -5,19 +5,31 @@ import { Reveal } from "@/components/ui/Reveal";
 import { ParallaxImage } from "@/components/about/ParallaxImage";
 import { AboutTimeline } from "@/components/about/AboutTimeline";
 import { Button } from "@/components/ui/Button";
+import type { Locale } from "@/lib/i18n/messages";
+import { localizedAlternates } from "@/lib/seo";
+import { getMessages } from "@/lib/i18n/messages";
 
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
   const settings = await getSettings();
+  const { locale } = await params;
   return {
-    title: "Về chúng tôi",
-    description: `Câu chuyện phía sau ${settings.store_name}.`,
+    title: locale === "en" ? "Our story" : "Về chúng tôi",
+    description: locale === "en" ? `The story behind ${settings.store_name}.` : `Câu chuyện phía sau ${settings.store_name}.`,
+    alternates: localizedAlternates(locale, "/ve-chung-toi", "/en/ve-chung-toi"),
   };
 }
 
-export default async function AboutPage() {
+export default async function AboutPage({ params }: { params: Promise<{ locale: Locale }> }) {
+  const { locale } = await params;
+  const copy = getMessages(locale);
   const [settings, products] = await Promise.all([getSettings(), getProducts()]);
 
-  const milestones = [
+  const milestones = locale === "en" ? [
+    { year: "The beginning", title: "A simple idea", body: `${settings.store_name} began with a belief: great shoes should be accessible, carefully made, and built from the right materials.` },
+    { year: "Selection", title: "Working directly with makers", body: "We work closely with our workshops and inspect every leather and sole before production." },
+    { year: "Growing", title: "From a few styles to a collection", body: "From everyday sneakers to office shoes, every style belongs because people need it." },
+    { year: "Today", title: "One standard stays", body: "We sell shoes our own team is happy to wear every day. That is the standard we keep." },
+  ] : [
     {
       year: "Khởi đầu",
       title: "Một ý tưởng đơn giản",
@@ -43,8 +55,8 @@ export default async function AboutPage() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8">
       <Reveal className="mx-auto max-w-2xl text-center">
-        <h1 className="font-display text-4xl font-bold text-fg sm:text-5xl">Về chúng tôi</h1>
-        <p className="mt-4 text-lg text-fg-muted">{settings.slogan}</p>
+        <h1 className="font-display text-4xl font-bold text-fg sm:text-5xl">{copy.about.title}</h1>
+        <p className="mt-4 text-lg text-fg-muted">{locale === "en" ? settings.slogan_en || settings.slogan : settings.slogan}</p>
       </Reveal>
 
       <div className="mt-12">
@@ -60,10 +72,10 @@ export default async function AboutPage() {
 
       <Reveal className="mt-24 text-center">
         <h2 className="font-display text-2xl font-bold text-fg sm:text-3xl">
-          Sẵn sàng chọn đôi giày của bạn?
+          {locale === "en" ? "Ready to find your next pair?" : "Sẵn sàng chọn đôi giày của bạn?"}
         </h2>
         <Button href="/san-pham" className="mt-6">
-          Khám phá sản phẩm
+          {copy.about.cta}
         </Button>
       </Reveal>
     </div>

@@ -6,6 +6,8 @@ import { FreeshipProgress } from "@/components/cart/FreeshipProgress";
 import { Button } from "@/components/ui/Button";
 import { useCartHydrated, useCartStore } from "@/store/cart";
 import { formatVND } from "@/lib/format";
+import { useLocaleContext } from "@/components/i18n/LocaleProvider";
+import { translate } from "@/lib/i18n/messages";
 
 export function CartPageContent({
   freeshipThreshold,
@@ -16,6 +18,8 @@ export function CartPageContent({
   couponCode: string | null;
   couponPercent: number;
 }) {
+  const { messages } = useLocaleContext();
+  const copy = messages.cart;
   const hydrated = useCartHydrated();
   const items = useCartStore((state) => state.items);
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -26,21 +30,20 @@ export function CartPageContent({
     return (
       <div className="mx-auto flex max-w-md flex-col items-center gap-4 px-4 py-24 text-center">
         <ShoppingBag className="h-12 w-12 text-fg-subtle" aria-hidden="true" />
-        <h1 className="font-display text-2xl font-bold text-fg">Giỏ hàng đang trống</h1>
-        <p className="text-fg-muted">Chọn một đôi giày ưng ý và quay lại đây nhé.</p>
-        <Button href="/san-pham">Tiếp tục mua sắm</Button>
+        <h1 className="font-display text-2xl font-bold text-fg">{copy.emptyTitle}</h1>
+        <p className="text-fg-muted">{copy.emptyBody}</p>
+        <Button href="/san-pham">{copy.continue}</Button>
       </div>
     );
   }
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
-      <h1 className="font-display text-3xl font-bold text-fg sm:text-4xl">Giỏ hàng</h1>
+      <h1 className="font-display text-3xl font-bold text-fg sm:text-4xl">{copy.title}</h1>
 
       {couponCode && (
         <div className="mt-6 rounded-lg border border-brand/30 bg-brand/10 p-3 text-sm text-brand">
-          Dùng mã <span className="font-medium">{couponCode}</span> để giảm {couponPercent}%
-          khi thanh toán
+          {translate(copy.coupon, { code: couponCode, percent: couponPercent })}
         </div>
       )}
 
@@ -56,14 +59,14 @@ export function CartPageContent({
 
       <div className="mt-8 flex flex-col items-end gap-4 border-t border-ink-700 pt-6">
         <div className="flex w-full max-w-xs items-center justify-between text-base">
-          <span className="text-fg-muted">Tạm tính</span>
+          <span className="text-fg-muted">{copy.subtotal}</span>
           <span className="tabular-nums font-medium text-fg">{formatVND(subtotal)}</span>
         </div>
         <p className="text-right text-xs text-fg-subtle">
-          Phí vận chuyển và giảm giá sẽ được tính chính xác ở bước thanh toán.
+          {copy.shippingNote}
         </p>
         <Button href="/thanh-toan" size="lg" className="w-full max-w-xs">
-          Tiến hành thanh toán
+          {copy.proceed}
         </Button>
       </div>
     </div>

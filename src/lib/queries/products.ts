@@ -15,7 +15,7 @@ export const getProducts = unstable_cache(
     if (error) throw new Error("Không đọc được danh sách sản phẩm.");
     return data;
   },
-  ["veloce-products"],
+  ["veloce-products-v2"],
   { tags: ["products"] },
 );
 
@@ -31,7 +31,7 @@ export const getProductBySlug = unstable_cache(
     if (error) throw new Error("Không đọc được sản phẩm.");
     return data;
   },
-  ["veloce-product-by-slug"],
+  ["veloce-product-by-slug-v2"],
   { tags: ["products"] },
 );
 
@@ -49,6 +49,6 @@ export const getRelatedProducts = unstable_cache(
     if (error) throw new Error("Không đọc được sản phẩm liên quan.");
     return data;
   },
-  ["veloce-related-products"],
+  ["veloce-related-products-v2"],
   { tags: ["products"] },
 );

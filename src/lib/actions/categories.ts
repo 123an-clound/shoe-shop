@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidateTag } from "next/cache";
+import { updateTag } from "next/cache";
 import { requireAdmin, actionErrorMessage } from "@/lib/auth/requireAdmin";
 import { categoryFormSchema } from "@/lib/validation/category";
 import type { ActionResult } from "@/lib/actions/products";
@@ -14,7 +14,7 @@ export async function createCategory(input: unknown): Promise<ActionResult> {
     const { error } = await supabase.from("veloce_categories").insert(parsed.data);
     if (error) throw new Error(error.message);
 
-    revalidateTag("categories", "max");
+    updateTag("categories");
     return { success: true };
   } catch (error) {
     return { success: false, error: actionErrorMessage(error) };
@@ -33,8 +33,8 @@ export async function updateCategory(categoryId: string, input: unknown): Promis
       .eq("id", categoryId);
     if (error) throw new Error(error.message);
 
-    revalidateTag("categories", "max");
-    revalidateTag("products", "max");
+    updateTag("categories");
+    updateTag("products");
     return { success: true };
   } catch (error) {
     return { success: false, error: actionErrorMessage(error) };
@@ -57,7 +57,7 @@ export async function deleteCategory(categoryId: string): Promise<ActionResult> 
     const { error } = await supabase.from("veloce_categories").delete().eq("id", categoryId);
     if (error) throw new Error(error.message);
 
-    revalidateTag("categories", "max");
+    updateTag("categories");
     return { success: true };
   } catch (error) {
     return { success: false, error: actionErrorMessage(error) };
