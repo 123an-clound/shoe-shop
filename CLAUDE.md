@@ -28,8 +28,8 @@ Giao diện tiếng Việt, tiền VND định dạng `2.890.000₫`.
 
 ## SUPABASE — đọc kỹ, sai ở đây là mất dữ liệu
 
-Project: `123an-clound's Project` · ref **`xsspvdgnhelzprcqaiek`** · Singapore
-URL: `https://xsspvdgnhelzprcqaiek.supabase.co`
+Project: `Web-project` · ref **`jtizooyjnllostamffpp`** · Seoul
+URL: `https://jtizooyjnllostamffpp.supabase.co`
 
 **Database đã dựng xong và đã có 24 sản phẩm.** Không tạo lại bảng, không seed lại.
 
@@ -47,7 +47,7 @@ Storage bucket: **`veloce`** — `products/{slug}-{1|2|3}.jpg`, `branding/logo.p
 - Dùng **`@supabase/ssr`**. ❌ Không dùng `@supabase/auth-helpers-nextjs` (đã ngừng phát triển).
 - `lib/supabase/client.ts` → Client Component · `server.ts` → RSC/Server Action (**tạo mới mỗi request**) · `middleware.ts` → refresh session + chặn `/admin`.
 - Type bảng lấy từ `src/types/database.ts` **sinh tự động**:
-  `npx supabase gen types typescript --project-id xsspvdgnhelzprcqaiek > src/types/database.ts`
+  `npx supabase gen types typescript --project-id jtizooyjnllostamffpp > src/types/database.ts`
   Chạy lại mỗi khi đổi schema. **Không viết tay type của bảng.**
 
 ### Đặt hàng & tồn kho — CHỈ QUA RPC
@@ -117,7 +117,7 @@ fg #f4f2ff · fg-muted #a5a0c0 · fg-subtle #6b6690 · neon-lime #a3e635 (chỉ 
 
 ## Ảnh
 - Ảnh sản phẩm nằm trên **Supabase Storage**, không nằm trong `public/`.
-- Thêm `xsspvdgnhelzprcqaiek.supabase.co` vào `images.remotePatterns` trong `next.config.ts`.
+- Thêm `jtizooyjnllostamffpp.supabase.co` vào `images.remotePatterns` trong `next.config.ts`.
 - Dùng `next/image` mọi nơi. Hero `priority`, còn lại lazy. Mọi ảnh có `sizes` + container `aspect-ratio`.
 - `npm run gen:images` tải ảnh Unsplash → cắt 3 khung → upload Storage → cập nhật cột `images`.
 - ⚠️ Trước khi deploy công khai: xem lại bucket, thay ảnh nào lộ logo thương hiệu (giấy phép Unsplash không cấp quyền nhãn hiệu trong ảnh).
@@ -147,7 +147,7 @@ fg #f4f2ff · fg-muted #a5a0c0 · fg-subtle #6b6690 · neon-lime #a3e635 (chỉ 
 npm run dev          # phát triển
 npm run build        # phải sạch, không warning TS, trước khi báo xong phase
 npm run gen:images   # tải + cắt + upload 72 ảnh sản phẩm lên Storage
-npx supabase gen types typescript --project-id xsspvdgnhelzprcqaiek > src/types/database.ts
+npx supabase gen types typescript --project-id jtizooyjnllostamffpp > src/types/database.ts
 ```
 
 ## Nguyên tắc cuối

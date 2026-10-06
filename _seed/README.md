@@ -15,7 +15,7 @@ Thư mục này chứa những gì đã chuẩn bị sẵn để Claude Code kh�
 Toàn bộ bảng, RLS, Storage bucket và dữ liệu đã được tạo trên Supabase ngày **25/08/2026**.
 **Không chạy lại các file SQL trong `sql/`** — chúng chỉ để đọc và đối chiếu khi cần hiểu schema.
 
-Project: `123an-clound's Project` · ref `xsspvdgnhelzprcqaiek` · Singapore
+Project: `Web-project` · ref `jtizooyjnllostamffpp` · Seoul
 
 | Bảng | Đã có |
 |---|---|
@@ -65,7 +65,7 @@ npm run gen:images
 
 Thêm vào `.env.local` (và nhớ `.gitignore` file này):
 ```
-NEXT_PUBLIC_SUPABASE_URL=https://xsspvdgnhelzprcqaiek.supabase.co
+NEXT_PUBLIC_SUPABASE_URL=https://jtizooyjnllostamffpp.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_1i_JXF8ar4zT9eCrRdch0A_9TG-UhaP
 VELOCE_ADMIN_EMAIL=email-admin-vua-tao
 VELOCE_ADMIN_PASSWORD=mat-khau-vua-tao
@@ -103,7 +103,7 @@ Chi tiết cách gọi ở `PLAN.md` mục 4.8.
 
 **c) Sinh lại type sau khi đổi schema:**
 ```bash
-npx supabase gen types typescript --project-id xsspvdgnhelzprcqaiek > src/types/database.ts
+npx supabase gen types typescript --project-id jtizooyjnllostamffpp > src/types/database.ts
 ```
 
 ---

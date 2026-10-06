@@ -21,7 +21,7 @@ và `NEXT_PUBLIC_SUPABASE_ANON_KEY` — xem `PLAN.md` mục 1.
 ```bash
 npm run build        # build production — phải sạch, không lỗi TypeScript
 npm run gen:images   # tải + cắt + upload ảnh sản phẩm lên Supabase Storage (Phase 2)
-npx supabase gen types typescript --project-id xsspvdgnhelzprcqaiek > src/types/database.ts
+npx supabase gen types typescript --project-id jtizooyjnllostamffpp > src/types/database.ts
 ```
 
 ## Tiến độ
