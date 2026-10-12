@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Grotesk } from "next/font/google";
 import { Toaster } from "sonner";
+import { Analytics } from "@vercel/analytics/next";
 import { getSettings } from "@/lib/queries/settings";
 import { SITE_URL } from "@/lib/seo";
 import "./globals.css";
@@ -60,6 +61,7 @@ export default async function RootLayout({
       <body className="min-h-full bg-ink-950 text-fg">
         {children}
         <Toaster theme="system" richColors position="bottom-right" />
+        <Analytics />
       </body>
     </html>
   );
