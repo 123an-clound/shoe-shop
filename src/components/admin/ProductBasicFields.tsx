@@ -37,12 +37,14 @@ export function ProductBasicFields({
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Input
           label="Tên sản phẩm"
+          id="product-name"
           value={watch("name")}
           onChange={(e) => handleNameChange(e.target.value)}
           error={errors.name?.message}
         />
         <Input
           label="Slug"
+          id="product-slug"
           value={slug}
           onChange={(e) => {
             setSlugTouched(true);
@@ -54,8 +56,9 @@ export function ProductBasicFields({
       <Input label="Product name (English)" {...register("nameEn")} />
 
       <div>
-        <label className="text-sm text-fg-muted">Danh mục</label>
+        <label htmlFor="product-category" className="text-sm text-fg-muted">Danh mục</label>
         <select
+          id="product-category"
           {...register("categoryId")}
           className="mt-1.5 h-11 w-full rounded-lg border border-ink-700 bg-ink-900 px-4 text-sm text-fg focus:border-brand focus:outline-none"
         >
@@ -71,8 +74,8 @@ export function ProductBasicFields({
         )}
       </div>
       <div>
-        <label className="text-sm text-fg-muted">Description (English)</label>
-        <textarea rows={4} {...register("descriptionEn")} className="mt-1.5 w-full rounded-lg border border-ink-700 bg-ink-900 px-4 py-3 text-sm text-fg focus:border-brand focus:outline-none" />
+        <label htmlFor="product-description-en" className="text-sm text-fg-muted">Description (English)</label>
+        <textarea id="product-description-en" rows={4} {...register("descriptionEn")} className="mt-1.5 w-full rounded-lg border border-ink-700 bg-ink-900 px-4 py-3 text-sm text-fg focus:border-brand focus:outline-none" />
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -84,6 +87,7 @@ export function ProductBasicFields({
         />
         <Input
           label="Giá gốc (₫) — để trống nếu không giảm"
+          id="product-original-price"
           type="number"
           value={originalPrice ?? ""}
           onChange={(e) =>
@@ -94,8 +98,9 @@ export function ProductBasicFields({
       </div>
 
       <div>
-        <label className="text-sm text-fg-muted">Mô tả</label>
+        <label htmlFor="product-description" className="text-sm text-fg-muted">Mô tả</label>
         <textarea
+          id="product-description"
           rows={4}
           {...register("description")}
           className="mt-1.5 w-full rounded-lg border border-ink-700 bg-ink-900 px-4 py-3 text-sm text-fg focus:border-brand focus:outline-none"

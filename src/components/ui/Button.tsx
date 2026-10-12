@@ -48,6 +48,7 @@ export function Button({
   if (href) {
     return (
       <LocaleLink
+        data-ui-button={variant}
         href={href}
         className={classes}
         {...(props as Omit<ComponentPropsWithoutRef<typeof LocaleLink>, "href">)}
@@ -58,7 +59,7 @@ export function Button({
   }
 
   return (
-    <button className={classes} {...(props as ComponentPropsWithoutRef<"button">)}>
+    <button data-ui-button={variant} className={classes} {...(props as ComponentPropsWithoutRef<"button">)}>
       {children}
     </button>
   );

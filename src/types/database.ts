@@ -546,12 +546,14 @@ export type Database = {
           price: number
           rating: number
           review_count: number
+          size_guide: Json | null
           sizes: number[]
           slug: string
           sort_order: number
           stock: number
           unsplash_id: string | null
           updated_at: string
+          video_url: string | null
         }
         Insert: {
           badge?: string | null
@@ -572,12 +574,14 @@ export type Database = {
           price: number
           rating?: number
           review_count?: number
+          size_guide?: Json | null
           sizes?: number[]
           slug: string
           sort_order?: number
           stock?: number
           unsplash_id?: string | null
           updated_at?: string
+          video_url?: string | null
         }
         Update: {
           badge?: string | null
@@ -598,12 +602,14 @@ export type Database = {
           price?: number
           rating?: number
           review_count?: number
+          size_guide?: Json | null
           sizes?: number[]
           slug?: string
           sort_order?: number
           stock?: number
           unsplash_id?: string | null
           updated_at?: string
+          video_url?: string | null
         }
         Relationships: [
           {

@@ -15,6 +15,7 @@ import {
 import { cn } from "@/lib/cn";
 import { signOutAdmin } from "@/lib/actions/auth";
 import { toast } from "sonner";
+import { AdminThemeToggle } from "@/components/admin/AdminThemeToggle";
 
 const NAV_ITEMS = [
   { href: "/admin", label: "Bảng điều khiển", icon: LayoutDashboard },
@@ -50,8 +51,9 @@ export function AdminSidebar({
     <aside className="sticky top-0 z-40 flex w-full shrink-0 flex-col border-b border-ink-700 bg-ink-900 p-3 md:h-screen md:w-64 md:border-b-0 md:border-r md:p-4">
       <div className="flex items-center justify-between px-2 py-2 md:block md:py-3">
         <div><p className="font-display text-base font-bold text-fg md:text-lg">{storeName}</p><p className="text-xs text-fg-subtle">Quản trị</p></div>
-        <button type="button" onClick={handleLogout} className="flex h-10 items-center gap-2 rounded-lg px-3 text-xs text-fg-muted hover:bg-white/5 hover:text-fg md:hidden"><LogOut className="h-4 w-4" aria-hidden="true" />Đăng xuất</button>
+        <button type="button" onClick={handleLogout} className="flex h-11 items-center gap-2 rounded-lg px-3 text-xs text-fg-muted hover:bg-ink-800 hover:text-fg md:hidden"><LogOut className="h-4 w-4" aria-hidden="true" />Đăng xuất</button>
       </div>
+      <div className="px-2 py-2"><AdminThemeToggle /></div>
 
       <nav aria-label="Điều hướng quản trị" className="mt-2 flex gap-1 overflow-x-auto pb-1 md:mt-4 md:flex-1 md:flex-col md:gap-1 md:overflow-visible md:pb-0">
         {NAV_ITEMS.map((item) => {
@@ -68,7 +70,7 @@ export function AdminSidebar({
                 "relative flex shrink-0 items-center gap-2 rounded-lg px-3 py-2.5 text-xs transition-colors sm:text-sm md:gap-3",
                 active
                   ? "bg-brand/15 text-brand"
-                  : "text-fg-muted hover:bg-white/5 hover:text-fg",
+                  : "text-fg-muted hover:bg-ink-800 hover:text-fg",
               )}
             >
               <Icon className="h-4 w-4" aria-hidden="true" />
@@ -87,7 +89,7 @@ export function AdminSidebar({
       <button
         type="button"
         onClick={handleLogout}
-        className="hidden items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-fg-muted transition-colors hover:bg-white/5 hover:text-fg md:flex"
+        className="hidden min-h-11 items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-fg-muted hover:bg-ink-800 hover:text-fg md:flex"
       >
         <LogOut className="h-4 w-4" aria-hidden="true" />
         Đăng xuất

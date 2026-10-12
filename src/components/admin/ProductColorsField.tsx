@@ -24,6 +24,7 @@ export function ProductColorsField({ form }: { form: UseFormReturn<ProductFormVa
               aria-label={`Mã màu dòng ${index + 1}`}
             />
             <Input
+              aria-label={`Tên màu dòng ${index + 1}`}
               className="flex-1"
               placeholder="Tên màu, ví dụ: Đen Tuyền"
               {...form.register(`colors.${index}.name` as const)}

@@ -15,6 +15,8 @@ export const MESSAGES = {
       email: "Địa chỉ email", subscribe: "Đăng ký", subscribed: "Đăng ký của bạn đã được ghi nhận.", submitError: "Chưa lưu được email. Hãy thử lại.", newsletterPrivacy: "Email được lưu để đội ngũ VELOCE quản lý đăng ký nhận tin. Hiện chưa có email tự động được gửi.", new: "Hàng mới về",
     },
     product: {
+      footLength: "Dài bàn chân (cm)",
+      video: "Video sản phẩm",
       new: "Mới", sale: "Giảm giá", hot: "Bán chạy", limited: "Giới hạn", noImage: "Chưa có ảnh", soldOut: "Tạm hết hàng", lowStock: "Chỉ còn {{count}} đôi",
       all: "Tất cả sản phẩm", filters: "Bộ lọc", count: "{{count}} sản phẩm", sort: "Sắp xếp", featuredSort: "Nổi bật", newest: "Mới nhất", priceLow: "Giá thấp đến cao", priceHigh: "Giá cao đến thấp",
       noResults: "Không tìm thấy sản phẩm phù hợp bộ lọc.", clearFilters: "Xóa bộ lọc", size: "Size (EU)", reviews: "đánh giá", description: "Mô tả", specs: "Thông số", rating: "Đánh giá", reviewsCount: "{{count}} lượt đánh giá", related: "Có thể bạn thích", color: "Màu sắc", chooseSize: "Chọn size", addToCart: "Thêm vào giỏ hàng", added: "Đã thêm vào giỏ hàng", selectColor: "Chọn màu trước khi thêm vào giỏ hàng.", selectSize: "Vui lòng chọn size.", sizeGuide: "Hướng dẫn chọn size",
@@ -40,6 +42,8 @@ export const MESSAGES = {
       email: "Email address", subscribe: "Sign up", subscribed: "Your request has been saved.", submitError: "We could not save your email. Please try again.", newsletterPrivacy: "Your email is saved for the VELOCE team to manage newsletter requests. Automated emails are not sent yet.", new: "New arrivals",
     },
     product: {
+      footLength: "Foot length (cm)",
+      video: "Product video",
       new: "New", sale: "Sale", hot: "Bestseller", limited: "Limited", noImage: "Image coming soon", soldOut: "Out of stock", lowStock: "Only {{count}} pairs left",
       all: "All footwear", filters: "Filters", count: "{{count}} items", sort: "Sort by", featuredSort: "Featured", newest: "Newest", priceLow: "Price: low to high", priceHigh: "Price: high to low",
       noResults: "No footwear matches these filters.", clearFilters: "Clear filters", size: "Size (EU)", reviews: "reviews", description: "Details", specs: "Specifications", rating: "Reviews", reviewsCount: "{{count}} reviews", related: "You may also like", color: "Color", chooseSize: "Choose a size", addToCart: "Add to cart", added: "Added to cart", selectColor: "Choose a color before adding to cart.", selectSize: "Please choose a size.", sizeGuide: "Size guide",

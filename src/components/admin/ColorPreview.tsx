@@ -23,7 +23,7 @@ export function ColorPreview({
   return (
     <div
       style={style}
-      className="flex flex-col gap-4 rounded-[var(--radius-card)] border border-ink-700 bg-ink-950 p-6"
+      className="storefront-preview flex flex-col gap-4 rounded-[var(--radius-card)] border border-ink-700 bg-ink-950 p-6"
     >
       <p className="text-xs uppercase tracking-wide text-fg-subtle">Xem trước</p>
       <div

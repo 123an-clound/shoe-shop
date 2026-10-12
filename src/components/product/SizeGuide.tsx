@@ -1,32 +1,26 @@
 import { Ruler } from "lucide-react";
-
-const SIZE_GUIDE: { size: number; cm: number }[] = [
-  { size: 39, cm: 24.5 },
-  { size: 40, cm: 25.0 },
-  { size: 41, cm: 25.5 },
-  { size: 42, cm: 26.0 },
-  { size: 43, cm: 26.5 },
-  { size: 44, cm: 27.0 },
-  { size: 45, cm: 27.5 },
-];
+import type { SizeGuideRow } from "@/lib/sizeGuide";
+import { useLocaleContext } from "@/components/i18n/LocaleProvider";
 
 /** Bảng quy đổi chiều dài bàn chân → size — lý do trả hàng số một là sai size (Phụ lục A2 PLAN.md). */
-export function SizeGuide() {
+export function SizeGuide({ rows }: { rows: SizeGuideRow[] }) {
+  const { messages } = useLocaleContext();
   return (
     <details className="group rounded-lg border border-ink-700 bg-ink-900 p-4 text-sm">
-      <summary className="flex cursor-pointer list-none items-center gap-2 text-fg-muted marker:content-none">
+      <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded text-fg-muted marker:content-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
         <Ruler className="h-4 w-4" aria-hidden="true" />
-        Bảng quy đổi size theo chiều dài bàn chân
+        {messages.product.sizeGuide}
       </summary>
       <table className="mt-4 w-full text-left text-xs">
+        <caption className="sr-only">{messages.product.sizeGuide}</caption>
         <thead>
-          <tr className="text-fg-subtle">
-            <th className="pb-2 font-normal">Size (EU)</th>
-            <th className="pb-2 font-normal">Dài bàn chân</th>
+          <tr className="text-fg-muted">
+            <th scope="col" className="pb-2 font-normal">{messages.product.size}</th>
+            <th scope="col" className="pb-2 font-normal">{messages.product.footLength}</th>
           </tr>
         </thead>
         <tbody className="text-fg">
-          {SIZE_GUIDE.map((row) => (
+          {rows.map((row) => (
             <tr key={row.size} className="border-t border-ink-700">
               <td className="py-2 tabular-nums">{row.size}</td>
               <td className="py-2 tabular-nums">{row.cm.toFixed(1)} cm</td>

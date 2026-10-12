@@ -3,7 +3,7 @@
 import { revalidatePath, updateTag } from "next/cache";
 import { requireAdmin, actionErrorMessage } from "@/lib/auth/requireAdmin";
 import { settingsFormSchema } from "@/lib/validation/settings";
-import { validateUploadedImage } from "@/lib/validation/image";
+import { validateUploadedWebp } from "@/lib/validation/image";
 import { z } from "zod";
 import type { ActionResult } from "@/lib/actions/products";
 import type { UploadImageResult } from "@/lib/actions/products";
@@ -81,10 +81,10 @@ export async function uploadSettingsImage(formData: FormData): Promise<UploadIma
 
     const file = formData.get("file");
     const path = formData.get("path");
-    if (!(file instanceof File) || typeof path !== "string" || !/^branding\/(logo|hero)-[a-f0-9-]{36}\.(png|jpg|webp)$/.test(path)) {
+    if (!(file instanceof File) || typeof path !== "string" || !/^branding\/(logo|hero)-[a-f0-9-]{36}\.webp$/.test(path)) {
       throw new Error("Thiếu dữ liệu ảnh.");
     }
-    const validationError = await validateUploadedImage(file, path);
+    const validationError = await validateUploadedWebp(file, path);
     if (validationError) throw new Error(validationError);
 
     const { error } = await supabase.storage

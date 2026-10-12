@@ -10,6 +10,7 @@ import { formatVND } from "@/lib/format";
 import type { Locale } from "@/lib/i18n/messages";
 import { getMessages } from "@/lib/i18n/messages";
 import { localizedAlternates, SITE_URL } from "@/lib/seo";
+import { getSizeGuide } from "@/lib/sizeGuide";
 
 export async function generateStaticParams() {
   const products = await getProducts();
@@ -82,7 +83,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productStructuredData).replace(/</g, "\\u003c") }}
       />
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
-        <Gallery images={product.images} productName={name} />
+        <Gallery images={product.images} productName={name} videoUrl={product.video_url} />
 
         <div>
           <p className="text-sm text-fg-subtle">{product.brand}</p>
@@ -118,7 +119,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           )}
 
           <div className="mt-8">
-            <ProductPurchasePanel product={product} />
+            <ProductPurchasePanel product={product} sizeGuide={getSizeGuide(product.size_guide)} />
           </div>
 
           <div className="mt-10">

@@ -6,18 +6,20 @@ import { ChevronDown, ChevronUp, GripVertical, ImagePlus, X } from "lucide-react
 import { toast } from "sonner";
 import { uploadProductImage } from "@/lib/actions/products";
 import { cn } from "@/lib/cn";
+import { MAX_PRODUCT_IMAGES } from "@/lib/validation/product";
+import { convertImageToWebp } from "@/lib/convertImageToWebp";
 
-const MAX_IMAGES = 3;
-
-/** Kéo thả tối đa 3 ảnh lên Storage, xem trước, sắp xếp lại thứ tự (mục 5.7 PLAN.md). */
+/** Tải ảnh lên Storage, xem trước và sắp xếp lại thứ tự. */
 export function ImageUploader({
   slug,
   value,
   onChange,
+  onUploadingChange,
 }: {
   slug: string;
   value: string[];
   onChange: (urls: string[]) => void;
+  onUploadingChange?: (uploading: boolean) => void;
 }) {
   const [uploading, setUploading] = useState(false);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
@@ -25,41 +27,47 @@ export function ImageUploader({
   const inputRef = useRef<HTMLInputElement>(null);
 
   async function handleFiles(files: FileList | null) {
-    if (!files || files.length === 0) return;
+    if (!files || files.length === 0 || uploading) return;
     if (!slug) {
       toast.error("Nhập tên sản phẩm trước khi tải ảnh lên.");
       return;
     }
 
-    const remainingSlots = MAX_IMAGES - value.length;
+    const remainingSlots = Math.max(0, MAX_PRODUCT_IMAGES - value.length);
     const filesToUpload = Array.from(files).slice(0, remainingSlots);
     if (filesToUpload.length === 0) {
-      toast.error("Đã đủ 3 ảnh.");
+      toast.error(`Đã đủ ${MAX_PRODUCT_IMAGES} ảnh.`);
       return;
+    }
+    if (files.length > remainingSlots) {
+      toast.info(`Chỉ tải thêm ${remainingSlots} ảnh để đủ tối đa ${MAX_PRODUCT_IMAGES} ảnh.`);
     }
 
     setUploading(true);
+    onUploadingChange?.(true);
     const newUrls: string[] = [];
     for (const [i, file] of filesToUpload.entries()) {
       const index = value.length + i + 1;
-      const ext = file.type === "image/jpeg" ? "jpg" : file.type === "image/png" ? "png" : "webp";
-      const path = `products/${slug}-${index}-${window.crypto.randomUUID()}.${ext}`;
-      const formData = new FormData();
-      formData.set("file", file);
-      formData.set("path", path);
       try {
+        const webp = await convertImageToWebp(file);
+        const path = `products/${slug}-${index}-${window.crypto.randomUUID()}.webp`;
+        const formData = new FormData();
+        formData.set("file", webp);
+        formData.set("path", path);
         const result = await uploadProductImage(formData);
         if (!result.success) {
           toast.error(result.error);
           continue;
         }
         newUrls.push(result.url);
-      } catch {
-        toast.error("Không kết nối được để tải ảnh lên. Hãy thử lại.");
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Không tải được ảnh. Hãy thử lại.");
       }
     }
-    setUploading(false);
     if (newUrls.length > 0) onChange([...value, ...newUrls]);
+    setUploading(false);
+    onUploadingChange?.(false);
+    if (inputRef.current) inputRef.current.value = "";
   }
 
   function removeAt(index: number) {
@@ -87,11 +95,11 @@ export function ImageUploader({
 
   return (
     <div>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 sm:grid-cols-3">
         {value.map((url, index) => (
           <div
             key={url}
-            draggable
+            draggable={!uploading}
             onDragStart={() => {
               dragIndexRef.current = index;
             }}
@@ -110,25 +118,25 @@ export function ImageUploader({
               <GripVertical className="h-3.5 w-3.5" aria-hidden="true" />
             </div>
             <div className="absolute right-1 top-1 flex gap-1">
-              <button type="button" onClick={() => moveAt(index, -1)} disabled={index === 0} aria-label={`Đưa ảnh ${index + 1} lên trước`} className="flex h-9 w-9 items-center justify-center rounded-full bg-ink-950/80 text-fg disabled:opacity-40">
+              <button type="button" onClick={() => moveAt(index, -1)} disabled={uploading || index === 0} aria-label={`Đưa ảnh ${index + 1} lên trước`} className="flex h-11 w-11 items-center justify-center rounded-full bg-ink-950/80 text-fg focus-visible:outline-2 focus-visible:outline-brand disabled:opacity-40">
                 <ChevronUp className="h-4 w-4" aria-hidden="true" />
               </button>
-              <button type="button" onClick={() => moveAt(index, 1)} disabled={index === value.length - 1} aria-label={`Đưa ảnh ${index + 1} xuống sau`} className="flex h-9 w-9 items-center justify-center rounded-full bg-ink-950/80 text-fg disabled:opacity-40">
+              <button type="button" onClick={() => moveAt(index, 1)} disabled={uploading || index === value.length - 1} aria-label={`Đưa ảnh ${index + 1} xuống sau`} className="flex h-11 w-11 items-center justify-center rounded-full bg-ink-950/80 text-fg focus-visible:outline-2 focus-visible:outline-brand disabled:opacity-40">
                 <ChevronDown className="h-4 w-4" aria-hidden="true" />
               </button>
-              <button type="button" onClick={() => removeAt(index)} aria-label={`Xóa ảnh ${index + 1}`} className="flex h-9 w-9 items-center justify-center rounded-full bg-ink-950/80 text-fg hover:text-red-400">
+              <button type="button" onClick={() => removeAt(index)} disabled={uploading} aria-label={`Xóa ảnh ${index + 1}`} className="flex h-11 w-11 items-center justify-center rounded-full bg-ink-950/80 text-fg hover:text-red-400 focus-visible:outline-2 focus-visible:outline-brand disabled:opacity-40">
                 <X className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
           </div>
         ))}
 
-        {value.length < MAX_IMAGES && (
+        {value.length < MAX_PRODUCT_IMAGES && (
           <button
             type="button"
             onClick={() => inputRef.current?.click()}
             disabled={uploading}
-            className="flex aspect-square flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-ink-700 text-fg-subtle transition-colors hover:border-brand hover:text-brand disabled:opacity-50"
+            className="flex aspect-square flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-ink-700 text-fg-muted hover:border-brand hover:text-fg focus-visible:outline-2 focus-visible:outline-brand disabled:opacity-50"
           >
             <ImagePlus className="h-5 w-5" aria-hidden="true" />
             <span className="text-xs">{uploading ? "Đang tải..." : "Thêm ảnh"}</span>
@@ -138,12 +146,13 @@ export function ImageUploader({
       <input
         ref={inputRef}
         type="file"
-        accept="image/png,image/jpeg,image/webp"
+        accept="image/png,image/jpeg,image/webp,image/avif"
         multiple
         className="hidden"
         onChange={(e) => handleFiles(e.target.files)}
       />
-      <p className="mt-2 text-xs text-fg-subtle">Tối đa 3 ảnh. Kéo để sắp xếp lại thứ tự.</p>
+      <p className="mt-2 text-xs text-fg-muted">{value.length}/{MAX_PRODUCT_IMAGES} ảnh (tối đa {MAX_PRODUCT_IMAGES}). Ảnh đầu tiên là ảnh đại diện. Kéo để sắp xếp lại thứ tự.</p>
+      <p className="mt-1 text-xs text-fg-muted">JPG/PNG/WebP/AVIF được tự động tối ưu thành WebP, cạnh dài tối đa 2.000 px.</p>
     </div>
   );
 }

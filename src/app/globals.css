@@ -40,13 +40,77 @@
 }
 
 .admin-shell {
+  color-scheme: light;
+  --surface-950: #f4f6f9;
+  --surface-900: #ffffff;
+  --surface-800: #edf1f7;
+  --surface-700: #d4dce8;
+  --text-primary: #182230;
+  --text-muted: #475569;
+  --text-subtle: #58677b;
+  --brand-primary: #1d4ed8;
+  --brand-secondary: #1d4ed8;
+  --brand-accent: #1d4ed8;
+  --on-brand: #ffffff;
+  --gradient-aurora: linear-gradient(var(--brand-primary), var(--brand-primary));
+  --shadow-glow: 0 1px 2px rgb(15 23 42 / 10%);
+  --radius-card: 12px;
+  --admin-danger: #b91c1c;
+  --admin-warning: #854d0e;
+  --admin-success: #166534;
+  --admin-control-border: #8593a6;
+  font-family: var(--font-body);
+}
+
+.admin-shell[data-admin-theme="dark"] {
+  color-scheme: dark;
+  --surface-950: #111827;
+  --surface-900: #1a2332;
+  --surface-800: #253247;
+  --surface-700: #3b4b63;
+  --text-primary: #f1f5f9;
+  --text-muted: #c1cbd8;
+  --text-subtle: #a6b3c5;
+  --brand-primary: #93b4ff;
+  --brand-secondary: #93b4ff;
+  --brand-accent: #93b4ff;
+  --on-brand: #111827;
+  --admin-danger: #fca5a5;
+  --admin-warning: #fcd34d;
+  --admin-success: #86efac;
+  --admin-control-border: #60718a;
+}
+
+.admin-shell [data-ui-button] {
+  border-radius: 10px;
+  transition: background-color 150ms, color 150ms;
+}
+
+.admin-shell .font-display { font-family: var(--font-body); }
+.admin-shell .text-red-400 { color: var(--admin-danger); }
+.admin-shell .hover\:text-red-400:hover { color: var(--admin-danger); }
+.admin-shell .text-amber-400 { color: var(--admin-warning); }
+.admin-shell .text-neon-lime { color: var(--admin-success); }
+.admin-shell .hover\:bg-white\/5:hover { background-color: var(--surface-800); }
+.admin-shell .glass { background: var(--surface-900); border-color: var(--surface-700); backdrop-filter: none; }
+.admin-shell :is(input:not([type="checkbox"]):not([type="color"]), select, textarea) { border-color: var(--admin-control-border); }
+.admin-shell :is(input, select, textarea):focus-visible { border-color: var(--brand-primary); outline: 2px solid var(--brand-primary); outline-offset: 2px; }
+.admin-shell [aria-invalid="true"] { border-color: var(--admin-danger); }
+.admin-shell input[type="checkbox"] { accent-color: var(--brand-primary); }
+
+/* Khối xem trước thương hiệu giữ bảng màu storefront trong cả hai giao diện admin. */
+.admin-shell .storefront-preview {
   --surface-950: #07060d;
   --surface-900: #0d0b18;
   --surface-800: #151226;
   --surface-700: #1f1a35;
   --text-primary: #f4f2ff;
   --text-muted: #a5a0c0;
-  --text-subtle: #6b6690;
+  --text-subtle: #a5a0c0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-shell [data-ui-button] { transition: none; }
 }
 
 /* ⚠️ BẮT BUỘC dùng `@theme inline` cho tầng màu thương hiệu.
@@ -63,7 +127,7 @@
   --color-fg: var(--text-primary);
   --color-fg-muted: var(--text-muted);
   --color-fg-subtle: var(--text-subtle);
-  --color-on-brand: #07060d;
+  --color-on-brand: var(--on-brand, #07060d);
 }
 
 @theme {

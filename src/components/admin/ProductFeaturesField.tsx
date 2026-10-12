@@ -38,6 +38,7 @@ export function ProductFeaturesField({ form }: { form: UseFormReturn<ProductForm
         {features.map((feature, index) => (
           <div key={index} className="flex items-center gap-2">
             <Input
+              aria-label={`Thông số dòng ${index + 1}`}
               className="flex-1"
               value={feature}
               onChange={(e) => updateAt(index, e.target.value)}

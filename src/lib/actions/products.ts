@@ -4,8 +4,9 @@ import { updateTag } from "next/cache";
 import { requireAdmin, actionErrorMessage } from "@/lib/auth/requireAdmin";
 import { getSettings } from "@/lib/queries/settings";
 import { productFormSchema, type ProductFormValues } from "@/lib/validation/product";
-import { validateUploadedImage } from "@/lib/validation/image";
+import { PRODUCT_IMAGE_PATH_PATTERN, validateUploadedWebp } from "@/lib/validation/image";
 import { z } from "zod";
+import { verifyStoredProductVideo } from "@/lib/productVideo";
 
 export type ActionResult =
   | { success: true }
@@ -37,11 +38,13 @@ function toRow(data: ReturnType<typeof parseProductForm>, brand: string) {
     features: data.features,
     features_en: data.featuresEn,
     sizes: data.sizes,
+    size_guide: data.sizeGuide,
     colors: data.colors,
     badge: data.badge,
     stock: data.stock,
     is_published: data.isPublished,
     images: data.images,
+    video_url: data.videoUrl,
   };
 }
 
@@ -49,6 +52,7 @@ export async function createProduct(input: unknown): Promise<ActionResult> {
   try {
     const { supabase } = await requireAdmin();
     const data = parseProductForm(input);
+    await verifyStoredProductVideo(data.videoUrl, supabase);
     const settings = await getSettings();
 
     const { error } = await supabase.from("veloce_products").insert(toRow(data, settings.store_name));
@@ -68,6 +72,7 @@ export async function updateProduct(productId: string, expectedUpdatedAt: string
       throw new Error("Phiên bản sản phẩm không hợp lệ. Hãy tải lại trang.");
     }
     const data = parseProductForm(input);
+    await verifyStoredProductVideo(data.videoUrl, supabase);
 
     const { data: existing, error: readError } = await supabase
       .from("veloce_products")
@@ -153,10 +158,10 @@ export async function uploadProductImage(formData: FormData): Promise<UploadImag
     if (!(file instanceof File) || typeof path !== "string") {
       throw new Error("Thiếu dữ liệu ảnh.");
     }
-    if (!/^products\/[a-z0-9-]+-[1-3]-[a-f0-9-]{36}\.(png|jpg|jpeg|webp)$/.test(path)) {
+    if (!PRODUCT_IMAGE_PATH_PATTERN.test(path)) {
       throw new Error("Đường dẫn ảnh sản phẩm không hợp lệ.");
     }
-    const validationError = await validateUploadedImage(file, path);
+    const validationError = await validateUploadedWebp(file, path);
     if (validationError) throw new Error(validationError);
 
     const { error } = await supabase.storage

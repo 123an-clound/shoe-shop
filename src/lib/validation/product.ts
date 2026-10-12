@@ -1,7 +1,9 @@
 import { z } from "zod";
+import { sizeGuideSchema } from "@/lib/sizeGuide";
 
 export const PRODUCT_BADGES = ["NEW", "SALE", "HOT", "LIMITED"] as const;
 export const AVAILABLE_SIZES = [39, 40, 41, 42, 43, 44, 45] as const;
+export const MAX_PRODUCT_IMAGES = 10;
 
 export const productColorSchema = z.object({
   name: z.string().min(1, "Nhập tên màu"),
@@ -23,11 +25,13 @@ export const productFormSchema = z.object({
   features: z.array(z.string().min(1)),
   featuresEn: z.array(z.string()),
   sizes: z.array(z.number().int()).min(1, "Chọn ít nhất 1 size"),
+  sizeGuide: sizeGuideSchema,
   colors: z.array(productColorSchema).min(1, "Thêm ít nhất 1 màu"),
   badge: z.enum(PRODUCT_BADGES).nullable(),
   stock: z.number().int().min(0, "Tồn kho không hợp lệ"),
   isPublished: z.boolean(),
-  images: z.array(z.string()).max(3, "Tối đa 3 ảnh"),
+  images: z.array(z.string()).max(MAX_PRODUCT_IMAGES, `Tối đa ${MAX_PRODUCT_IMAGES} ảnh`),
+  videoUrl: z.string().url("Video không hợp lệ").nullable(),
 });
 
 export type ProductFormValues = z.infer<typeof productFormSchema>;

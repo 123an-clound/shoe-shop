@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 import { ImagePlus, X } from "lucide-react";
 import { toast } from "sonner";
 import { uploadSettingsImage } from "@/lib/actions/settings";
+import { convertImageToWebp } from "@/lib/convertImageToWebp";
 
 export function BrandingImageField({
   label,
@@ -21,22 +22,22 @@ export function BrandingImageField({
   const inputRef = useRef<HTMLInputElement>(null);
 
   async function handleFile(file: File | undefined) {
-    if (!file) return;
+    if (!file || uploading) return;
     setUploading(true);
-    const formData = new FormData();
-    const extension = file.type === "image/jpeg" ? "jpg" : file.type === "image/png" ? "png" : "webp";
-    const role = path.endsWith("logo") ? "logo" : "hero";
-    const uploadPath = `branding/${role}-${window.crypto.randomUUID()}.${extension}`;
-    formData.set("file", file);
-    formData.set("path", uploadPath);
     let result;
     try {
+      const webp = await convertImageToWebp(file);
+      const formData = new FormData();
+      const role = path.endsWith("logo") ? "logo" : "hero";
+      formData.set("file", webp);
+      formData.set("path", `branding/${role}-${window.crypto.randomUUID()}.webp`);
       result = await uploadSettingsImage(formData);
-    } catch {
-      toast.error("Không kết nối được để tải ảnh lên. Hãy thử lại.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Không tải được ảnh. Hãy thử lại.");
       return;
     } finally {
       setUploading(false);
+      if (inputRef.current) inputRef.current.value = "";
     }
     if (!result.success) {
       toast.error(result.error);
@@ -70,8 +71,9 @@ export function BrandingImageField({
             <button
               type="button"
               onClick={() => onChange("")}
+              disabled={uploading}
               aria-label={`Xóa ${label}`}
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-fg-subtle hover:text-red-400"
+              className="flex h-11 w-11 items-center justify-center rounded-lg text-fg-muted hover:text-red-400 disabled:opacity-50"
             >
               <X className="h-4 w-4" aria-hidden="true" />
             </button>
@@ -81,10 +83,11 @@ export function BrandingImageField({
       <input
         ref={inputRef}
         type="file"
-        accept="image/png,image/jpeg,image/webp"
+        accept="image/png,image/jpeg,image/webp,image/avif"
         className="hidden"
         onChange={(e) => handleFile(e.target.files?.[0])}
       />
+      <p className="mt-2 text-xs text-fg-muted">Ảnh được tối ưu và tải lên dưới dạng WebP.</p>
     </div>
   );
 }

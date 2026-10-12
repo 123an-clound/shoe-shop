@@ -8,9 +8,10 @@ import { AddToCartBar } from "@/components/product/AddToCartBar";
 import type { Product } from "@/lib/queries/products";
 import type { ProductColor } from "@/types";
 import { useLocaleContext } from "@/components/i18n/LocaleProvider";
+import type { SizeGuideRow } from "@/lib/sizeGuide";
 
 /** Gom state chọn màu/size để AddToCartBar dùng — chọn màu trước, size sau (Phụ lục A2 PLAN.md). */
-export function ProductPurchasePanel({ product }: { product: Product }) {
+export function ProductPurchasePanel({ product, sizeGuide }: { product: Product; sizeGuide: SizeGuideRow[] }) {
   const { messages } = useLocaleContext();
   const colors = product.colors as ProductColor[];
   const [selectedColor, setSelectedColor] = useState<string | null>(colors[0]?.hex ?? null);
@@ -35,7 +36,7 @@ export function ProductPurchasePanel({ product }: { product: Product }) {
         </div>
       </div>
 
-      <SizeGuide />
+      <SizeGuide rows={sizeGuide} />
 
       <AddToCartBar
         product={product}
