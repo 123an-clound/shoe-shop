@@ -3,6 +3,7 @@ import { Star } from "lucide-react";
 import { getProductBySlug, getProducts, getRelatedProducts } from "@/lib/queries/products";
 import { Gallery } from "@/components/product/Gallery";
 import { ProductPurchasePanel } from "@/components/product/ProductPurchasePanel";
+import { ProductSelectionProvider } from "@/components/product/ProductSelectionProvider";
 import { Badge } from "@/components/ui/Badge";
 import { Tabs } from "@/components/ui/Tabs";
 import { ProductGrid } from "@/components/product/ProductGrid";
@@ -82,8 +83,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productStructuredData).replace(/</g, "\\u003c") }}
       />
+      <ProductSelectionProvider key={product.id} colors={product.colors} images={product.images}>
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
-        <Gallery images={product.images} productName={name} videoUrl={product.video_url} />
+        <Gallery images={product.images} productName={name} videoUrl={product.video_url} colors={product.colors} />
 
         <div>
           <p className="text-sm text-fg-subtle">{product.brand}</p>
@@ -172,6 +174,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           </div>
         </div>
       </div>
+
+      </ProductSelectionProvider>
 
       {related.length > 0 && (
         <div className="mt-20">

@@ -30,9 +30,11 @@ const NAV_ITEMS = [
 export function AdminSidebar({
   storeName,
   hasPendingOrders,
+  pendingOrderCount,
 }: {
   storeName: string;
   hasPendingOrders: boolean;
+  pendingOrderCount?: number;
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -76,10 +78,7 @@ export function AdminSidebar({
               <Icon className="h-4 w-4" aria-hidden="true" />
               <span>{item.label}</span>
               {item.href === "/admin/don-hang" && hasPendingOrders && (
-                <span
-                  className="absolute right-3 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-red-500"
-                  aria-hidden="true"
-                />
+                <span className="ml-auto rounded-full bg-brand/15 px-2 py-0.5 text-xs font-medium tabular-nums text-fg" aria-label={`${pendingOrderCount ?? 1} đơn chờ xử lý`}>{pendingOrderCount ?? "Mới"}</span>
               )}
             </Link>
           );

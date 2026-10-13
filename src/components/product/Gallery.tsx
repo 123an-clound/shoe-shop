@@ -6,17 +6,21 @@ import { Video } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { usePointerFine, usePrefersReducedMotion } from "@/lib/hooks/useMediaQuery";
 import { useLocaleContext } from "@/components/i18n/LocaleProvider";
+import { useProductSelection } from "@/components/product/ProductSelectionProvider";
+import { getProductColors } from "@/lib/productVariants";
 
 export function Gallery({
   images,
   productName,
   videoUrl,
+  colors,
 }: {
   images: string[];
   productName: string;
   videoUrl?: string | null;
+  colors?: unknown;
 }) {
-  const [active, setActive] = useState(0);
+  const { activeMedia: active, selectMedia: setActive, selectedColor } = useProductSelection();
   const pointerFine = usePointerFine();
   const reducedMotion = usePrefersReducedMotion();
   const { messages } = useLocaleContext();
@@ -24,6 +28,7 @@ export function Gallery({
   const mediaCount = images.length + (videoUrl ? 1 : 0);
   const selected = active < mediaCount ? active : 0;
   const showVideo = !!videoUrl && selected === images.length;
+  const imageColor = getProductColors(colors).find((color) => color.image === images[selected] && color.hex === selectedColor);
 
   function handleMouseMove(e: MouseEvent<HTMLDivElement>) {
     if (!pointerFine || reducedMotion || showVideo) return;
@@ -87,7 +92,7 @@ export function Gallery({
             </video>
           ) : <Image
             src={images[selected]}
-            alt={productName}
+            alt={`${productName}${imageColor ? ` — ${imageColor.name}` : ""}`}
             fill
             priority
             sizes="(min-width: 1024px) 45vw, 100vw"

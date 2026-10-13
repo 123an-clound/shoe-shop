@@ -38,7 +38,7 @@ export default async function AdminDashboardLayout({
 
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
-      <AdminSidebar storeName={settings.store_name} hasPendingOrders={pendingCount > 0} />
+      <AdminSidebar storeName={settings.store_name} hasPendingOrders={pendingCount > 0} pendingOrderCount={pendingCount} />
       <main className="min-w-0 flex-1 overflow-x-hidden p-4 sm:p-6 lg:p-8">{children}</main>
     </div>
   );

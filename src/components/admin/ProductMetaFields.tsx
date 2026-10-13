@@ -3,6 +3,7 @@
 import type { UseFormReturn } from "react-hook-form";
 import { Input } from "@/components/ui/Input";
 import { PRODUCT_BADGES, type ProductFormValues } from "@/lib/validation/product";
+import { hasVariantInventory } from "@/lib/productVariants";
 
 const BADGE_LABEL: Record<string, string> = {
   NEW: "Mới",
@@ -20,6 +21,7 @@ export function ProductMetaFields({ form }: { form: UseFormReturn<ProductFormVal
   } = form;
 
   const badge = watch("badge");
+  const tracked = hasVariantInventory(watch("colors"));
 
   return (
     <>
@@ -44,12 +46,14 @@ export function ProductMetaFields({ form }: { form: UseFormReturn<ProductFormVal
             ))}
           </select>
         </div>
-        <Input
-          label="Tồn kho"
+        {!tracked && <Input
+          label="Tổng tồn kho chưa phân bổ"
           type="number"
+          min={0}
+          step={1}
           {...register("stock", { valueAsNumber: true })}
           error={errors.stock?.message}
-        />
+        />}
       </div>
 
       <label className="flex items-center gap-2 text-sm text-fg-muted">

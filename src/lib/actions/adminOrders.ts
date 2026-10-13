@@ -1,63 +1,44 @@
 "use server";
 
-import { updateTag } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { requireAdmin, actionErrorMessage } from "@/lib/auth/requireAdmin";
-import { canTransitionOrderStatus, isOrderStatus } from "@/lib/orderStatus";
+import { orderPatchSchema, orderVersionSchema, cancelOrderSchema } from "@/lib/orderOperations";
 import type { ActionResult } from "@/lib/actions/products";
-import { z } from "zod";
 
-export async function updateOrderStatus(orderId: string, status: string): Promise<ActionResult> {
+export async function updateOrderOperations(orderId: string, expectedUpdatedAt: string, input: unknown): Promise<ActionResult> {
   try {
     const { supabase } = await requireAdmin();
 
-    if (!z.string().uuid().safeParse(orderId).success || !isOrderStatus(status)) {
-      throw new Error("Trạng thái hoặc mã đơn không hợp lệ.");
-    }
-
-    const { data: current, error: readError } = await supabase
-      .from("veloce_orders")
-      .select("status")
-      .eq("id", orderId)
-      .maybeSingle();
-
-    if (readError) throw new Error("Không đọc được trạng thái đơn hàng.");
-    if (!current) throw new Error("Không tìm thấy đơn hàng.");
-    if (!canTransitionOrderStatus(current.status, status)) {
-      throw new Error("Trạng thái này không thể chuyển tiếp từ trạng thái hiện tại.");
-    }
-
-    const { data: updated, error } = await supabase
-      .from("veloce_orders")
-      .update({ status })
-      .eq("id", orderId)
-      .eq("status", current.status)
-      .select("id")
-      .maybeSingle();
-    if (error) throw new Error("Không thể cập nhật trạng thái đơn hàng.");
-    if (!updated) {
-      throw new Error("Đơn hàng vừa được người khác cập nhật. Hãy tải lại để xem trạng thái mới.");
-    }
-
+    if (!orderVersionSchema.safeParse({ id: orderId, updatedAt: expectedUpdatedAt }).success) throw new Error("Phiên bản đơn không hợp lệ. Tải lại trang.");
+    const parsed = orderPatchSchema.safeParse(input);
+    if (!parsed.success) throw new Error(parsed.error.issues[0]?.message ?? "Dữ liệu cập nhật không hợp lệ.");
+    const { error } = await supabase.rpc("veloce_admin_update_order", { p_order_id: orderId, p_expected_updated_at: expectedUpdatedAt, p_patch: parsed.data });
+    if (error) throw new Error(error.message);
+    revalidatePath("/admin", "layout");
     return { success: true };
   } catch (error) {
     return { success: false, error: actionErrorMessage(error) };
   }
 }
 
+export async function updateOrderStatus(orderId: string, status: string, expectedUpdatedAt: string): Promise<ActionResult> {
+  return updateOrderOperations(orderId, expectedUpdatedAt, { status });
+}
+
 /**
  * Hủy đơn CHỈ qua RPC veloce_cancel_order — hàm này tự hoàn kho, không tự
  * update cột stock hay status từ ứng dụng (mục 4.8/5.7 PLAN.md).
  */
-export async function cancelOrder(orderId: string): Promise<ActionResult> {
+export async function cancelOrder(orderId: string, expectedUpdatedAt: string, reason: string, goodsReturned = false): Promise<ActionResult> {
   try {
     const { supabase } = await requireAdmin();
-    if (!z.string().uuid().safeParse(orderId).success) {
-      throw new Error("Mã đơn hàng không hợp lệ.");
-    }
-    const { error } = await supabase.rpc("veloce_cancel_order", { p_order_id: orderId });
-    if (error) throw new Error("Không thể hủy đơn hàng. Hãy tải lại và kiểm tra trạng thái hiện tại.");
+    const parsed = cancelOrderSchema.safeParse({ id: orderId, updatedAt: expectedUpdatedAt, reason, goodsReturned });
+    if (!parsed.success) throw new Error(parsed.error.issues[0]?.message ?? "Thông tin hủy đơn không hợp lệ.");
+    const { error } = await supabase.rpc("veloce_admin_cancel_order", { p_order_id: orderId, p_expected_updated_at: expectedUpdatedAt, p_reason: parsed.data.reason, p_goods_returned: goodsReturned });
+    if (error) throw new Error(error.message);
 
     updateTag("products");
+    revalidatePath("/admin", "layout");
     return { success: true };
   } catch (error) {
     return { success: false, error: actionErrorMessage(error) };

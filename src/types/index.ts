@@ -2,6 +2,8 @@
 export type ProductColor = {
   name: string;
   hex: string;
+  image?: string | null;
+  inventory?: { size: number; quantity: number }[];
 };
 
 /** Hình dạng một dòng trong cột jsonb `items` của `veloce_orders` (bản chụp lúc đặt). */

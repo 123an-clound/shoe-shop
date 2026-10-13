@@ -472,56 +472,130 @@ export type Database = {
         }
         Relationships: []
       }
+      veloce_order_events: {
+        Row: {
+          actor_id: string | null
+          actor_name: string
+          changes: Json
+          created_at: string
+          event_type: string
+          id: string
+          order_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          actor_name: string
+          changes?: Json
+          created_at?: string
+          event_type: string
+          id?: string
+          order_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          actor_name?: string
+          changes?: Json
+          created_at?: string
+          event_type?: string
+          id?: string
+          order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "veloce_order_events_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "veloce_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       veloce_orders: {
         Row: {
           address: string
+          cancellation_reason: string | null
+          cancelled_at: string | null
           code: string
+          completed_at: string | null
+          confirmed_at: string | null
           created_at: string
           customer_email: string | null
           customer_name: string
           customer_phone: string
           discount: number
           id: string
+          internal_note: string | null
           items: Json
           note: string | null
+          packed_at: string | null
+          paid_at: string | null
+          payment_status: string | null
+          refunded_at: string | null
+          shipped_at: string | null
+          shipping_carrier: string | null
           shipping_fee: number
           status: string
           subtotal: number
           total: number
+          tracking_number: string | null
           updated_at: string
         }
         Insert: {
           address: string
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
           code: string
+          completed_at?: string | null
+          confirmed_at?: string | null
           created_at?: string
           customer_email?: string | null
           customer_name: string
           customer_phone: string
           discount?: number
           id?: string
+          internal_note?: string | null
           items?: Json
           note?: string | null
+          packed_at?: string | null
+          paid_at?: string | null
+          payment_status?: string | null
+          refunded_at?: string | null
+          shipped_at?: string | null
+          shipping_carrier?: string | null
           shipping_fee?: number
           status?: string
           subtotal?: number
           total?: number
+          tracking_number?: string | null
           updated_at?: string
         }
         Update: {
           address?: string
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
           code?: string
+          completed_at?: string | null
+          confirmed_at?: string | null
           created_at?: string
           customer_email?: string | null
           customer_name?: string
           customer_phone?: string
           discount?: number
           id?: string
+          internal_note?: string | null
           items?: Json
           note?: string | null
+          packed_at?: string | null
+          paid_at?: string | null
+          payment_status?: string | null
+          refunded_at?: string | null
+          shipped_at?: string | null
+          shipping_carrier?: string | null
           shipping_fee?: number
           status?: string
           subtotal?: number
           total?: number
+          tracking_number?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -1154,6 +1228,24 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      veloce_admin_cancel_order: {
+        Args: {
+          p_expected_updated_at: string
+          p_goods_returned?: boolean
+          p_order_id: string
+          p_reason: string
+        }
+        Returns: undefined
+      }
+      veloce_admin_order_summary: { Args: never; Returns: Json }
+      veloce_admin_update_order: {
+        Args: {
+          p_expected_updated_at: string
+          p_order_id: string
+          p_patch: Json
+        }
+        Returns: undefined
+      }
       veloce_cancel_order: { Args: { p_order_id: string }; Returns: undefined }
       veloce_admin_revenue_last_30_days: { Args: Record<PropertyKey, never>; Returns: number }
       veloce_submit_contact_message: {
@@ -1161,6 +1253,7 @@ export type Database = {
         Returns: undefined
       }
       veloce_subscribe_newsletter: { Args: { p_email: string; p_locale: string }; Returns: undefined }
+      veloce_variant_inventory_ready: { Args: never; Returns: boolean }
       veloce_place_order: {
         Args: {
           p_address: string

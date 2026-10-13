@@ -4,7 +4,6 @@ import { AlertTriangle, Package, Receipt, Wallet } from "lucide-react";
 import {
   getLatestOrder,
   getLowStockProducts,
-  getPendingOrderCount,
   getRecentOrders,
   getRevenueLast30Days,
   getTotalProductCount,
@@ -13,13 +12,15 @@ import { StatCard } from "@/components/admin/StatCard";
 import { Badge } from "@/components/ui/Badge";
 import { formatTimeAgo, formatVND } from "@/lib/format";
 import { ORDER_STATUS_LABEL, isOrderStatus } from "@/lib/orderStatus";
+import { getOrderSummary } from "@/lib/queries/adminOrderOperations";
+import { OrderWorkload } from "@/components/admin/OrderWorkload";
 
 export const metadata: Metadata = { title: "Bảng điều khiển" };
 
 export default async function AdminDashboardPage() {
-  const [pendingCount, latestOrder, recentOrders, revenue, totalProducts, lowStock] =
+  const [summary, latestOrder, recentOrders, revenue, totalProducts, lowStock] =
     await Promise.all([
-      getPendingOrderCount(),
+      getOrderSummary(),
       getLatestOrder(),
       getRecentOrders(5),
       getRevenueLast30Days(),
@@ -31,10 +32,12 @@ export default async function AdminDashboardPage() {
     <div className="flex flex-col gap-8">
       <h1 className="font-display text-2xl font-bold text-fg">Bảng điều khiển</h1>
 
+      <OrderWorkload summary={summary} />
+
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <StatCard
-          label="Đơn chờ xử lý"
-          value={String(pendingCount)}
+          label="Đơn đặt hôm nay"
+          value={String(summary.today)}
           emphasize
           icon={<Receipt className="h-5 w-5 text-brand" aria-hidden="true" />}
           hint={latestOrder ? `Đơn mới nhất: ${formatTimeAgo(latestOrder.created_at)}` : undefined}
@@ -45,9 +48,10 @@ export default async function AdminDashboardPage() {
           icon={<Package className="h-5 w-5 text-brand" aria-hidden="true" />}
         />
         <StatCard
-          label="Doanh thu 30 ngày"
+          label="Giá trị đơn hoàn tất · đặt trong 30 ngày"
           value={formatVND(revenue)}
           icon={<Wallet className="h-5 w-5 text-brand" aria-hidden="true" />}
+          hint="Giá trị đơn hàng, chưa phải số tiền đã đối soát"
         />
       </div>
 
@@ -64,9 +68,9 @@ export default async function AdminDashboardPage() {
           ) : (
             <ul className="mt-4 flex flex-col gap-3">
               {recentOrders.map((order) => (
-                <li key={order.id} className="flex items-center justify-between text-sm">
+                <li key={order.id} className="flex flex-wrap items-center justify-between gap-3 text-sm">
                   <div>
-                    <p className="font-medium text-fg">{order.code}</p>
+                    <Link href={`/admin/don-hang/${order.id}`} className="inline-flex min-h-11 items-center font-medium text-fg underline focus-visible:outline-2 focus-visible:outline-brand">{order.code}</Link>
                     <p className="text-xs text-fg-subtle">
                       {order.customer_name} · {formatTimeAgo(order.created_at)}
                     </p>

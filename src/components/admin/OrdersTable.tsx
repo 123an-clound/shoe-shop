@@ -1,145 +1,76 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/Badge";
-import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { formatVND, formatTimeAgo } from "@/lib/format";
-import { getNextOrderStatuses, ORDER_STATUS_LABEL, isOrderStatus } from "@/lib/orderStatus";
-import { cancelOrder, updateOrderStatus } from "@/lib/actions/adminOrders";
-import type { Order } from "@/lib/queries/admin";
+import { ORDER_STATUS_LABEL, isOrderStatus } from "@/lib/orderStatus";
+import { isOverdueOrder, paymentLabel } from "@/lib/orderOperations";
+import { updateOrderStatus } from "@/lib/actions/adminOrders";
+import type { OrderListItem } from "@/lib/queries/adminOrderOperations";
 
-export function OrdersTable({ orders }: { orders: Order[] }) {
+export function OrdersTable({ orders }: { orders: OrderListItem[] }) {
   const router = useRouter();
-  const [cancelTarget, setCancelTarget] = useState<Order | null>(null);
-  const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
+  const [pendingId, setPendingId] = useState<string | null>(null);
 
-  const sorted = [...orders].sort((a, b) => {
-    if (a.status === "pending" && b.status !== "pending") return -1;
-    if (a.status !== "pending" && b.status === "pending") return 1;
-    return b.created_at.localeCompare(a.created_at);
-  });
-
-  async function handleStatusChange(order: Order, status: string) {
-    if (pendingOrderId) return;
-    setPendingOrderId(order.id);
+  async function confirm(order: OrderListItem) {
+    if (pendingId) return;
+    setPendingId(order.id);
     try {
-      const result = await updateOrderStatus(order.id, status);
-      if (!result.success) {
-        toast.error(result.error);
-        router.refresh();
-        return;
-      }
-      toast.success("Đã cập nhật trạng thái");
+      const result = await updateOrderStatus(order.id, "confirmed", order.updated_at);
+      if (!result.success) { toast.error(result.error); router.refresh(); return; }
+      toast.success(`Đã xác nhận ${order.code}`);
       router.refresh();
-    } catch {
-      toast.error("Không kết nối được. Hãy tải lại để kiểm tra trạng thái đơn.");
-      router.refresh();
-    } finally {
-      setPendingOrderId(null);
-    }
+    } catch { toast.error("Không kết nối được. Làm mới để kiểm tra trạng thái đơn."); router.refresh(); }
+    finally { setPendingId(null); }
   }
 
-  async function handleCancel() {
-    if (!cancelTarget || pendingOrderId) return;
-    setPendingOrderId(cancelTarget.id);
-    try {
-      const result = await cancelOrder(cancelTarget.id);
-      if (!result.success) {
-        toast.error(result.error);
-        router.refresh();
-        return;
-      }
-      toast.success("Đã hủy đơn và hoàn kho");
-      setCancelTarget(null);
-      router.refresh();
-    } catch {
-      toast.error("Không kết nối được. Hãy tải lại để kiểm tra trạng thái đơn.");
-      router.refresh();
-    } finally {
-      setPendingOrderId(null);
-    }
+  function actions(order: OrderListItem) {
+    return <div className="flex flex-wrap items-center gap-2">
+      <Link href={`/admin/don-hang/${order.id}`} className="inline-flex min-h-11 items-center rounded-lg border border-ink-700 px-3 text-sm text-fg hover:border-brand focus-visible:outline-2 focus-visible:outline-brand" aria-label={`Xử lý đơn ${order.code}`}>Xử lý đơn</Link>
+      {order.status === "pending" && <button type="button" disabled={pendingId !== null} onClick={() => confirm(order)} className="min-h-11 rounded-lg bg-brand px-3 text-sm font-medium text-on-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:opacity-50" aria-label={`Xác nhận đơn ${order.code}`}>{pendingId === order.id ? "Đang xác nhận..." : "Xác nhận"}</button>}
+    </div>;
   }
 
-  return (
-    <div className="overflow-x-auto rounded-[var(--radius-card)] border border-ink-700">
-      <table className="w-full min-w-[820px] text-sm">
-        <thead className="bg-ink-900 text-left text-fg-muted">
-          <tr>
-            <th className="p-3 font-medium">Mã đơn</th>
-            <th className="p-3 font-medium">Khách hàng</th>
-            <th className="p-3 font-medium">Tổng tiền</th>
-            <th className="p-3 font-medium">Thời gian</th>
-            <th className="p-3 font-medium">Trạng thái</th>
-            <th className="p-3 font-medium" />
-          </tr>
-        </thead>
-        <tbody>
-          {sorted.map((order) => (
-            <tr key={order.id} className="border-t border-ink-700">
-              <td className="p-3">
-                <Link href={`/admin/don-hang/${order.id}`} className="font-medium text-fg hover:text-brand">
-                  {order.code}
-                </Link>
-              </td>
-              <td className="p-3 text-fg-muted">
-                {order.customer_name}
-                <br />
-                <span className="text-xs text-fg-subtle">{order.customer_phone}</span>
-              </td>
-              <td className="p-3 tabular-nums text-fg">{formatVND(order.total)}</td>
-              <td className="p-3 text-fg-subtle">{formatTimeAgo(order.created_at)}</td>
-              <td className="p-3">
-                {isOrderStatus(order.status) && getNextOrderStatuses(order.status).length > 0 ? (
-                  <select
-                    value={order.status}
-                    onChange={(e) => handleStatusChange(order, e.target.value)}
-                    disabled={pendingOrderId !== null}
-                    aria-label={`Trạng thái đơn ${order.code}`}
-                    className="h-9 rounded-lg border border-ink-700 bg-ink-900 px-2 text-xs text-fg focus:border-brand focus:outline-none disabled:cursor-wait disabled:opacity-60"
-                  >
-                    {[order.status, ...getNextOrderStatuses(order.status)].map((status) => (
-                      <option key={status} value={status}>
-                        {ORDER_STATUS_LABEL[status]}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <Badge tone={order.status === "done" ? "lime" : "muted"}>
-                    {isOrderStatus(order.status) ? ORDER_STATUS_LABEL[order.status] : order.status}
-                  </Badge>
-                )}
-              </td>
-              <td className="p-3">
-                {order.status !== "cancelled" && order.status !== "done" && (
-                  <button
-                    type="button"
-                    onClick={() => setCancelTarget(order)}
-                    className="text-xs text-red-400 hover:underline"
-                  >
-                    Hủy đơn
-                  </button>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {sorted.length === 0 && (
-        <p className="p-6 text-center text-sm text-fg-muted">Chưa có đơn hàng nào.</p>
-      )}
+  function status(order: OrderListItem) {
+    return <div className="flex flex-col items-start gap-1.5">
+      <Badge tone={order.status === "pending" ? "brand" : order.status === "done" ? "lime" : "muted"}>{isOrderStatus(order.status) ? ORDER_STATUS_LABEL[order.status] : order.status}</Badge>
+      {isOverdueOrder(order) && <span className="text-xs text-amber-400">Chờ quá 24 giờ</span>}
+      {order.status === "confirmed" && <span className="text-xs text-fg-muted">{order.packed_at ? "Đã đóng gói" : "Chưa đóng gói"}</span>}
+    </div>;
+  }
 
-      <ConfirmDialog
-        open={!!cancelTarget}
-        title="Hủy đơn hàng"
-        description="Tồn kho của các sản phẩm trong đơn sẽ được hoàn lại."
-        expectedText={cancelTarget?.code ?? ""}
-        confirmLabel="Hủy đơn"
-        onConfirm={handleCancel}
-        onClose={() => setCancelTarget(null)}
-      />
+  if (!orders.length) return <div className="rounded-xl border border-ink-700 bg-ink-900 p-8 text-center"><p className="font-medium text-fg">Không có đơn hàng phù hợp</p><p className="mt-2 text-sm text-fg-muted">Thử bỏ bớt bộ lọc hoặc làm mới để nhận đơn mới.</p></div>;
+
+  return <>
+    <div className="flex flex-col gap-3 lg:hidden">
+      {orders.map((order) => <article key={order.id} className="rounded-xl border border-ink-700 bg-ink-900 p-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div><Link href={`/admin/don-hang/${order.id}`} className="inline-flex min-h-11 items-center font-semibold text-fg underline focus-visible:outline-2 focus-visible:outline-brand">{order.code}</Link><p className="text-xs text-fg-muted">{formatTimeAgo(order.created_at)}</p></div>
+          {status(order)}
+        </div>
+        <p className="mt-3 break-words text-sm text-fg">{order.customer_name}</p>
+        <a href={`tel:${order.customer_phone}`} className="inline-flex min-h-11 items-center text-sm text-fg-muted underline focus-visible:outline-2 focus-visible:outline-brand">{order.customer_phone}</a>
+        <div className="mb-4 flex flex-wrap justify-between gap-2 text-sm"><span className="font-semibold tabular-nums text-fg">{formatVND(order.total)}</span><span className="text-fg-muted">{paymentLabel(order.payment_status)}</span></div>
+        {order.tracking_number && <p className="mb-3 break-all text-xs text-fg-muted">{order.shipping_carrier} · {order.tracking_number}</p>}
+        {actions(order)}
+      </article>)}
     </div>
-  );
+    <div className="hidden overflow-x-auto rounded-xl border border-ink-700 lg:block">
+      <table className="w-full min-w-[960px] text-sm">
+        <caption className="sr-only">Danh sách đơn hàng và trạng thái xử lý</caption>
+        <thead className="bg-ink-900 text-left text-fg-muted"><tr>{["Đơn hàng", "Khách hàng", "Trạng thái", "Thanh toán", "Tổng tiền", "Thao tác"].map(label => <th scope="col" key={label} className="p-3 font-medium">{label}</th>)}</tr></thead>
+        <tbody>{orders.map((order) => <tr key={order.id} className="border-t border-ink-700">
+          <td className="p-3"><Link href={`/admin/don-hang/${order.id}`} className="inline-flex min-h-11 items-center font-semibold text-fg underline focus-visible:outline-2 focus-visible:outline-brand">{order.code}</Link><p className="text-xs text-fg-muted">{formatTimeAgo(order.created_at)}</p>{order.tracking_number && <p className="mt-1 max-w-48 break-all text-xs text-fg-muted">{order.shipping_carrier} · {order.tracking_number}</p>}</td>
+          <td className="p-3"><p className="text-fg">{order.customer_name}</p><a href={`tel:${order.customer_phone}`} className="inline-flex min-h-11 items-center text-xs text-fg-muted underline focus-visible:outline-2 focus-visible:outline-brand">{order.customer_phone}</a></td>
+          <td className="p-3">{status(order)}</td>
+          <td className="p-3 text-fg-muted">{paymentLabel(order.payment_status)}</td>
+          <td className="p-3 font-medium tabular-nums text-fg">{formatVND(order.total)}</td>
+          <td className="p-3">{actions(order)}</td>
+        </tr>)}</tbody>
+      </table>
+    </div>
+  </>;
 }

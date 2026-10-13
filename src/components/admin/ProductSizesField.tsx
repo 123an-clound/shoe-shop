@@ -8,10 +8,17 @@ export function ProductSizesField({ form }: { form: UseFormReturn<ProductFormVal
   const sizes = form.watch("sizes");
 
   function toggle(size: number) {
+    const colors = form.getValues("colors");
+    if (sizes.includes(size) && colors.some((color) => (color.inventory?.find((entry) => entry.size === size)?.quantity ?? 0) > 0) &&
+        !window.confirm(`Bỏ size ${size} sẽ xóa tồn kho của size này ở tất cả màu. Tiếp tục?`)) return;
     const next = sizes.includes(size)
       ? sizes.filter((s) => s !== size)
       : [...sizes, size].sort((a, b) => a - b);
-    form.setValue("sizes", next, { shouldValidate: true });
+    form.setValue("sizes", next, { shouldDirty: true });
+    colors.forEach((color, index) => {
+      if (color.inventory) form.setValue(`colors.${index}.inventory`, next.map((currentSize) => ({ size: currentSize, quantity: color.inventory?.find((entry) => entry.size === currentSize)?.quantity ?? 0 })), { shouldDirty: true });
+    });
+    void form.trigger(["sizes", "colors"]);
   }
 
   return (

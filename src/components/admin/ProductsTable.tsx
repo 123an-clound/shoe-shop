@@ -12,6 +12,7 @@ import { cn } from "@/lib/cn";
 import { deleteProduct, toggleProductPublish } from "@/lib/actions/products";
 import type { AdminProduct } from "@/lib/queries/admin";
 import type { Category } from "@/lib/queries/categories";
+import { getProductColors, hasVariantInventory } from "@/lib/productVariants";
 
 export function ProductsTable({
   products,
@@ -133,7 +134,18 @@ export function ProductsTable({
                   {categoryMap.get(product.category_id ?? "") ?? "—"}
                 </td>
                 <td className="p-3 tabular-nums text-fg">{formatVND(product.price)}</td>
-                <td className="p-3 tabular-nums text-fg-muted">{product.stock}</td>
+                <td className="p-3 tabular-nums text-fg-muted">
+                  <span>{product.stock} đôi</span>
+                  {hasVariantInventory(getProductColors(product.colors)) ? (
+                    <details className="mt-1">
+                      <summary className="cursor-pointer text-xs text-brand focus-visible:outline-2 focus-visible:outline-brand">Theo màu & size</summary>
+                      <ul className="mt-2 flex flex-col gap-1 text-xs">
+                        {getProductColors(product.colors).map((color) => <li key={color.hex}><span className="font-medium text-fg">{color.name}:</span> {(color.inventory ?? []).map((entry) => `${entry.size}: ${entry.quantity}`).join(" · ")}</li>)}
+                      </ul>
+                    </details>
+                  ) : <span className="mt-1 block text-xs">Chưa phân bổ biến thể</span>}
+                  <Link href={`/admin/san-pham/${product.id}/ton-kho`} aria-label={`Điều chỉnh tồn kho ${product.name}`} className="mt-1 inline-flex min-h-11 items-center text-xs text-fg underline focus-visible:outline-2 focus-visible:outline-brand">Điều chỉnh tồn kho</Link>
+                </td>
                 <td className="p-3">
                   <button
                     type="button"

@@ -24,6 +24,22 @@
     color-mix(in oklab, var(--brand-primary) 55%, transparent);
 }
 
+/* Chỉ in phiếu đóng gói; ghi chú nội bộ và điều hướng quản trị không lên giấy. */
+@media print {
+  body:has([data-order-print]) { background: white !important; color: black !important; }
+  body:has([data-order-print]) .admin-shell { min-height: 0 !important; background: white !important; }
+  body:has([data-order-print]) .admin-shell > div { display: block !important; min-height: 0 !important; }
+  body:has([data-order-print]) aside,
+  body:has([data-order-print]) [data-no-print],
+  body:has([data-order-print]) [data-sonner-toaster] { display: none !important; }
+  body:has([data-order-print]) main { overflow: visible !important; padding: 0 !important; }
+  [data-order-print] { display: block !important; font-size: 12pt; }
+  [data-order-print], [data-order-print] * { color: black !important; background: white !important; box-shadow: none !important; }
+  [data-order-print] table { border-collapse: collapse; }
+  [data-order-print] th, [data-order-print] td { border-bottom: 1px solid #999; padding: 8pt 4pt; }
+  [data-order-print] tr { break-inside: avoid; }
+}
+
 :root[data-theme="light"] {
   color-scheme: light;
   --surface-950: #f5f7fa;

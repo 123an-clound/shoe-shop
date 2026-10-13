@@ -7,6 +7,15 @@ import { productFormSchema, type ProductFormValues } from "@/lib/validation/prod
 import { PRODUCT_IMAGE_PATH_PATTERN, validateUploadedWebp } from "@/lib/validation/image";
 import { z } from "zod";
 import { verifyStoredProductVideo } from "@/lib/productVideo";
+import { getInventoryTotal, hasVariantInventory } from "@/lib/productVariants";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/database";
+
+async function verifyVariantInventoryReady(data: ProductFormValues, supabase: SupabaseClient<Database>) {
+  if (!hasVariantInventory(data.colors)) return;
+  const { data: ready, error } = await supabase.rpc("veloce_variant_inventory_ready");
+  if (error || !ready) throw new Error("Cần áp dụng migration tồn kho theo biến thể trên Supabase trước khi lưu. Dữ liệu trên form vẫn được giữ lại.");
+}
 
 export type ActionResult =
   | { success: true }
@@ -41,7 +50,7 @@ function toRow(data: ReturnType<typeof parseProductForm>, brand: string) {
     size_guide: data.sizeGuide,
     colors: data.colors,
     badge: data.badge,
-    stock: data.stock,
+    stock: hasVariantInventory(data.colors) ? getInventoryTotal(data.colors) : data.stock,
     is_published: data.isPublished,
     images: data.images,
     video_url: data.videoUrl,
@@ -52,6 +61,7 @@ export async function createProduct(input: unknown): Promise<ActionResult> {
   try {
     const { supabase } = await requireAdmin();
     const data = parseProductForm(input);
+    await verifyVariantInventoryReady(data, supabase);
     await verifyStoredProductVideo(data.videoUrl, supabase);
     const settings = await getSettings();
 
@@ -72,6 +82,7 @@ export async function updateProduct(productId: string, expectedUpdatedAt: string
       throw new Error("Phiên bản sản phẩm không hợp lệ. Hãy tải lại trang.");
     }
     const data = parseProductForm(input);
+    await verifyVariantInventoryReady(data, supabase);
     await verifyStoredProductVideo(data.videoUrl, supabase);
 
     const { data: existing, error: readError } = await supabase

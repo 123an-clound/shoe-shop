@@ -10,6 +10,7 @@ import { formatVND } from "@/lib/format";
 import { usePrefersReducedMotion } from "@/lib/hooks/useMediaQuery";
 import type { Product } from "@/lib/queries/products";
 import { useLocaleContext } from "@/components/i18n/LocaleProvider";
+import { getColorImage, getProductColors, getVariantStock } from "@/lib/productVariants";
 
 /** Chọn màu + size xong mới thêm được vào giỏ. Dính đáy màn hình trên mobile (Phụ lục A2 PLAN.md). */
 export function AddToCartBar({
@@ -26,7 +27,15 @@ export function AddToCartBar({
   const addItem = useCartStore((state) => state.addItem);
   const reducedMotion = usePrefersReducedMotion();
   const { locale, messages } = useLocaleContext();
-  const outOfStock = product.stock <= 0;
+  const stock = getVariantStock(product, selectedColor, selectedSize);
+  const outOfStock = product.stock <= 0 ||
+    (selectedColor !== null && product.sizes.every((size) => getVariantStock(product, selectedColor, size) <= 0)) ||
+    (selectedSize !== null && stock <= 0);
+  const image = getColorImage(product.images, getProductColors(product.colors), selectedColor);
+  const items = useCartStore((state) => state.items);
+  const inCart = items.find((item) => item.productId === product.id && item.color === selectedColor && item.size === selectedSize)?.quantity ?? 0;
+  const maxQuantity = Math.max(0, Math.min(10 - inCart, stock - inCart));
+  const chosenQuantity = Math.min(quantity, Math.max(1, maxQuantity));
 
   function handleAddToCart() {
     if (!selectedColor) {
@@ -37,6 +46,10 @@ export function AddToCartBar({
       toast.error(messages.product.selectSize);
       return;
     }
+    if (maxQuantity <= 0) {
+      toast.error(locale === "en" ? "Your cart already contains all available pairs of this variant." : "Giỏ hàng đã có đủ số đôi còn lại của màu và size này.");
+      return;
+    }
 
     addItem({
       productId: product.id,
@@ -44,14 +57,14 @@ export function AddToCartBar({
       name: product.name,
       nameEn: product.name_en ?? product.name,
       price: product.price,
-      image: product.images[0] ?? "",
+      image,
       size: selectedSize,
       color: selectedColor,
-      quantity,
+      quantity: chosenQuantity,
     });
 
-    if (!reducedMotion && buttonWrapperRef.current && product.images[0]) {
-      flyToCart(buttonWrapperRef.current, product.images[0]);
+    if (!reducedMotion && buttonWrapperRef.current && image) {
+      flyToCart(buttonWrapperRef.current, image);
     }
 
     toast.success(locale === "en" ? `${product.name_en || product.name} ${messages.product.added.toLowerCase()}` : `Đã thêm ${product.name} vào giỏ`);
@@ -65,16 +78,18 @@ export function AddToCartBar({
           <button
             type="button"
             aria-label="Giảm số lượng"
-            onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+            disabled={chosenQuantity <= 1}
+            onClick={() => setQuantity(Math.max(1, chosenQuantity - 1))}
             className="flex h-11 w-11 items-center justify-center text-fg-muted hover:text-fg"
           >
             <Minus className="h-4 w-4" aria-hidden="true" />
           </button>
-          <span className="w-8 text-center text-sm tabular-nums text-fg">{quantity}</span>
+          <span className="w-8 text-center text-sm tabular-nums text-fg">{chosenQuantity}</span>
           <button
             type="button"
             aria-label="Tăng số lượng"
-            onClick={() => setQuantity((q) => Math.min(10, q + 1))}
+            disabled={selectedSize === null || chosenQuantity >= maxQuantity}
+            onClick={() => setQuantity(Math.min(maxQuantity, chosenQuantity + 1))}
             className="flex h-11 w-11 items-center justify-center text-fg-muted hover:text-fg"
           >
             <Plus className="h-4 w-4" aria-hidden="true" />
@@ -85,13 +100,13 @@ export function AddToCartBar({
           <Button
             type="button"
             size="lg"
-            disabled={outOfStock}
+            disabled={outOfStock || (selectedSize !== null && maxQuantity <= 0)}
             onClick={handleAddToCart}
             className="w-full"
           >
             {outOfStock
               ? messages.product.soldOut
-              : `${messages.product.addToCart} — ${formatVND(product.price * quantity)}`}
+              : `${messages.product.addToCart} — ${formatVND(product.price * chosenQuantity)}`}
           </Button>
         </div>
       </div>

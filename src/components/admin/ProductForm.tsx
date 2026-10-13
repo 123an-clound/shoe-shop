@@ -13,12 +13,14 @@ import { ProductFeaturesField } from "@/components/admin/ProductFeaturesField";
 import { ProductSizesField } from "@/components/admin/ProductSizesField";
 import { ProductSizeGuideField } from "@/components/admin/ProductSizeGuideField";
 import { ProductColorsField } from "@/components/admin/ProductColorsField";
+import { ProductInventoryField } from "@/components/admin/ProductInventoryField";
+import { ProductColorImagesField } from "@/components/admin/ProductColorImagesField";
 import { ProductMetaFields } from "@/components/admin/ProductMetaFields";
 import { createProduct, updateProduct } from "@/lib/actions/products";
 import { productFormSchema, type ProductFormValues } from "@/lib/validation/product";
 import type { Category } from "@/lib/queries/categories";
 import type { Product } from "@/lib/queries/products";
-import type { ProductColor } from "@/types";
+import { getProductColors } from "@/lib/productVariants";
 import { getSizeGuide } from "@/lib/sizeGuide";
 
 export function ProductForm({
@@ -49,7 +51,7 @@ export function ProductForm({
           featuresEn: product.features_en ?? [],
           sizes: product.sizes,
           sizeGuide: getSizeGuide(product.size_guide),
-          colors: product.colors as ProductColor[],
+          colors: getProductColors(product.colors),
           badge: product.badge as ProductFormValues["badge"],
           stock: product.stock,
           isPublished: product.is_published,
@@ -133,15 +135,24 @@ export function ProductForm({
       <ProductSizesField form={form} />
       <ProductSizeGuideField form={form} />
       <ProductColorsField form={form} />
+      <ProductInventoryField form={form} />
       <ProductMetaFields form={form} />
 
       <div>
         <label className="text-sm text-fg-muted">Ảnh sản phẩm</label>
         <div className="mt-2">
-          <ImageUploader slug={slug} value={images} onChange={(urls) => setValue("images", urls, { shouldDirty: true, shouldValidate: true })} onUploadingChange={setUploadingImages} />
+          <ImageUploader slug={slug} value={images} onChange={(urls) => {
+            setValue("images", urls, { shouldDirty: true });
+            form.getValues("colors").forEach((color, index) => {
+              if (color.image && !urls.includes(color.image)) setValue(`colors.${index}.image`, null, { shouldDirty: true });
+            });
+            void form.trigger(["images", "colors"]);
+          }} onUploadingChange={setUploadingImages} />
         </div>
         {errors.images && <p className="mt-1 text-xs text-red-400">{errors.images.message}</p>}
       </div>
+
+      <ProductColorImagesField form={form} />
 
       <VideoUploader slug={slug} value={videoUrl} onChange={(url) => setValue("videoUrl", url, { shouldDirty: true, shouldValidate: true })} onUploadingChange={setUploadingVideo} />
       {errors.videoUrl && <p role="alert" className="text-sm text-red-400">{errors.videoUrl.message}</p>}
