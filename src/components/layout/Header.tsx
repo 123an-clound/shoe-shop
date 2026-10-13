@@ -9,14 +9,17 @@ import { LocaleLink } from "@/components/i18n/LocaleLink";
 import { LanguageSwitch } from "@/components/i18n/LanguageSwitch";
 import { ThemeToggle } from "@/components/i18n/ThemeToggle";
 import { useLocaleContext } from "@/components/i18n/LocaleProvider";
+import { customerCopy } from "@/lib/customer/copy";
+import { HeaderAccount } from "@/components/customer/HeaderAccount";
 
 export function Header({ storeName }: { storeName: string }) {
-  const { messages } = useLocaleContext();
+  const { messages, locale } = useLocaleContext();
   const navItems = [
     { href: "/", label: messages.nav.home },
     { href: "/san-pham", label: messages.nav.products },
     { href: "/ve-chung-toi", label: messages.nav.about },
     { href: "/lien-he", label: messages.nav.contact },
+    { href: "/gio-hang#don-hang", label: customerCopy(locale).link },
   ];
   const [scrolled, setScrolled] = useState(false);
   const hydrated = useCartHydrated();
@@ -61,8 +64,8 @@ export function Header({ storeName }: { storeName: string }) {
           {storeName}
         </LocaleLink>
 
-        <nav className="hidden items-center gap-8 md:flex">
-          {navItems.map((item) => (
+        <nav className="hidden items-center gap-6 lg:flex">
+          {navItems.slice(0, 4).map((item) => (
             <LocaleLink
               key={item.href}
               href={item.href}
@@ -75,6 +78,7 @@ export function Header({ storeName }: { storeName: string }) {
 
         <div className="flex items-center gap-2">
           <div className="hidden items-center gap-2 sm:flex"><LanguageSwitch /><ThemeToggle /></div>
+          <HeaderAccount locale={locale} />
           <button
             id="header-cart-icon"
             type="button"

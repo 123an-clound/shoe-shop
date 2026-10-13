@@ -14,6 +14,6 @@ export const getCategories = unstable_cache(
     if (error) throw new Error("Không đọc được danh mục.");
     return data;
   },
-  ["veloce-categories-v2"],
+  ["veloce-categories-v3"],
   { tags: ["categories"] },
 );

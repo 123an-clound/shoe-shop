@@ -3,6 +3,9 @@
 import { updateTag } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { placeOrderInputSchema } from "@/lib/validation/order";
+import { saveReceipt } from "@/lib/customer/receipts";
+import { verifyCustomerSession } from "@/lib/customer/session";
+import { checkoutIdentityMatches } from "@/lib/customer/identity";
 
 export type PlaceOrderResult =
   | { success: true; orderCode: string; orderTotal: number }
@@ -23,8 +26,14 @@ export async function placeOrder(input: unknown): Promise<PlaceOrderResult> {
   }
 
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("veloce_place_order_idempotent", {
+  const session = await verifyCustomerSession(supabase);
+  if (session.error) return { success: false, error: "Chưa xác minh được tài khoản. Vui lòng thử lại trước khi đặt hàng." };
+  if (!checkoutIdentityMatches(parsed.data.expectedUserId, session.user?.id ?? null)) {
+    return { success: false, error: "Tài khoản đã thay đổi. Hãy cập nhật trang và kiểm tra tài khoản trước khi đặt hàng." };
+  }
+  const { data, error } = await supabase.rpc("veloce_place_order_with_receipt", {
     p_idempotency_key: parsed.data.idempotencyKey,
+    p_receipt_token: parsed.data.receiptToken,
     p_customer_name: parsed.data.customerName,
     p_customer_phone: parsed.data.customerPhone,
     p_address: parsed.data.address,
@@ -51,6 +60,8 @@ export async function placeOrder(input: unknown): Promise<PlaceOrderResult> {
 
   // Tồn kho vừa đổi — làm mới cache sản phẩm (mục 4.9 PLAN.md). Dự án không bật
   updateTag("products");
+
+  await saveReceipt({ id: row.order_id, code: row.order_code, token: parsed.data.receiptToken });
 
   return { success: true, orderCode: row.order_code, orderTotal: row.order_total };
 }

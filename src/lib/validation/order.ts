@@ -25,7 +25,9 @@ export const orderItemSchema = z.object({
 });
 
 export const placeOrderInputSchema = checkoutFormSchema.extend({
+  expectedUserId: z.string().uuid().nullable(),
   idempotencyKey: z.string().uuid(),
+  receiptToken: z.string().regex(/^[0-9a-f]{64}$/, "Biên nhận không hợp lệ"),
   items: z
     .array(orderItemSchema)
     .min(1, "Giỏ hàng đang trống")

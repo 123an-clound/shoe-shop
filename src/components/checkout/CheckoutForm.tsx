@@ -22,7 +22,7 @@ const STEP_FIELDS: (keyof CheckoutFormValues)[][] = [
   [],
 ];
 
-export function CheckoutForm() {
+export function CheckoutForm({ customerUserId, sessionUnavailable = false }: { customerUserId: string | null; sessionUnavailable?: boolean }) {
   const { locale, messages } = useLocaleContext();
   const copy = messages.checkout;
   const router = useRouter();
@@ -33,6 +33,7 @@ export function CheckoutForm() {
   const [serverError, setServerError] = useState<string | null>(null);
   const submittingRef = useRef(false);
   const fallbackIdempotencyKey = useRef<string | null>(null);
+  const fallbackReceiptToken = useRef<string | null>(null);
   const steps = [...copy.steps];
 
   const {
@@ -73,18 +74,28 @@ export function CheckoutForm() {
 
     let result;
     let idempotencyKey: string;
+    let receiptToken: string;
     try {
+      const newToken = () => Array.from(window.crypto.getRandomValues(new Uint8Array(32)), (byte) => byte.toString(16).padStart(2, "0")).join("");
       try {
-        idempotencyKey = window.sessionStorage.getItem("veloce-checkout-key") || window.crypto.randomUUID();
+        idempotencyKey = window.sessionStorage.getItem("veloce-checkout-key") || fallbackIdempotencyKey.current || window.crypto.randomUUID();
+        fallbackIdempotencyKey.current = idempotencyKey;
+        receiptToken = window.sessionStorage.getItem("veloce-checkout-receipt") || fallbackReceiptToken.current || newToken();
+        fallbackReceiptToken.current = receiptToken;
         window.sessionStorage.setItem("veloce-checkout-key", idempotencyKey);
+        window.sessionStorage.setItem("veloce-checkout-receipt", receiptToken);
       } catch {
         idempotencyKey = fallbackIdempotencyKey.current || window.crypto.randomUUID();
+        receiptToken = fallbackReceiptToken.current || newToken();
         fallbackIdempotencyKey.current = idempotencyKey;
+        fallbackReceiptToken.current = receiptToken;
       }
 
       result = await placeOrder({
         ...values,
         idempotencyKey,
+        receiptToken,
+        expectedUserId: customerUserId,
         items: items.map((item) => ({
           productId: item.productId,
           size: item.size,
@@ -110,9 +121,12 @@ export function CheckoutForm() {
 
     try {
       window.sessionStorage.removeItem("veloce-checkout-key");
+      window.sessionStorage.removeItem("veloce-checkout-receipt");
     } catch {
-      fallbackIdempotencyKey.current = null;
+      // Keep the confirmed result even when sessionStorage is unavailable.
     }
+    fallbackIdempotencyKey.current = null;
+    fallbackReceiptToken.current = null;
     clearCart();
     router.push(
       localizedHref(`/thanh-toan/thanh-cong?ma=${encodeURIComponent(result.orderCode)}&tong=${result.orderTotal}`, locale),
@@ -202,7 +216,7 @@ export function CheckoutForm() {
             {copy.next}
           </Button>
         ) : (
-          <Button type="submit" disabled={submitting}>
+          <Button type="submit" disabled={submitting || sessionUnavailable}>
             {submitting ? copy.submitting : copy.placeOrder}
           </Button>
         )}

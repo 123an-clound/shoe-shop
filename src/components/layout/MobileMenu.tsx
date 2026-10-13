@@ -44,7 +44,7 @@ export function MobileMenu({
         type="button"
         aria-label={messages.controls.openMenu}
         onClick={() => setOpen(true)}
-        className="flex h-11 w-11 items-center justify-center rounded-full text-fg transition-colors hover:bg-white/5 md:hidden"
+        className="flex h-11 w-11 items-center justify-center rounded-full text-fg transition-colors hover:bg-white/5 lg:hidden"
       >
         <Menu className="h-5 w-5" aria-hidden="true" />
       </button>
@@ -55,7 +55,7 @@ export function MobileMenu({
             role="dialog"
             aria-modal="true"
             aria-label={`${messages.controls.openMenu} — ${storeName}`}
-            className="fixed inset-0 z-[60] md:hidden"
+            className="fixed inset-0 z-[60] lg:hidden"
           >
             <motion.div
               initial={{ opacity: 0 }}

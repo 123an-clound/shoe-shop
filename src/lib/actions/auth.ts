@@ -32,12 +32,12 @@ export async function signInAdmin(email: string, password: string): Promise<Sign
       .maybeSingle();
 
     if (adminError) {
-      await supabase.auth.signOut();
+      await supabase.auth.signOut({ scope: "local" });
       return { success: false, error: "Không kiểm tra được quyền quản trị. Hãy thử lại sau." };
     }
 
     if (!admin) {
-      await supabase.auth.signOut();
+      await supabase.auth.signOut({ scope: "local" });
       return { success: false, error: "Tài khoản không có quyền quản trị." };
     }
 
@@ -49,6 +49,6 @@ export async function signInAdmin(email: string, password: string): Promise<Sign
 
 export async function signOutAdmin(): Promise<void> {
   const supabase = await createClient();
-  const { error } = await supabase.auth.signOut();
+  const { error } = await supabase.auth.signOut({ scope: "local" });
   if (error) throw new Error("Không thể kết thúc phiên đăng nhập.");
 }

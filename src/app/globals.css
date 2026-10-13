@@ -14,6 +14,15 @@
   --text-muted: #a5a0c0;
   --text-subtle: #6b6690;
 
+  --product-badge-new-bg: #a3e635;
+  --product-badge-new-fg: #1a2e05;
+  --product-badge-sale-bg: #be123c;
+  --product-badge-sale-fg: #ffffff;
+  --product-badge-hot-bg: #fde047;
+  --product-badge-hot-fg: #422006;
+  --product-badge-limited-bg: #5b21b6;
+  --product-badge-limited-fg: #ffffff;
+
   --gradient-aurora: linear-gradient(
     135deg,
     var(--brand-primary) 0%,

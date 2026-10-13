@@ -75,6 +75,62 @@ thời điểm thực của từng thao tác trong cùng giao dịch.
 Chỉ bổ sung cột vào `veloce_orders`, lịch sử `veloce_order_events` và các hàm/trigger `veloce_*`.
 Kiểm thử database: `node tests/order-operations-db.mjs <path-to-pglite/dist/index.js>`.
 
+## Tài khoản khách hàng và theo dõi đơn
+
+Mở nút **Đăng nhập / Tài khoản** trên đầu trang hoặc **Giỏ hàng → Tài khoản & Đơn hàng của tôi**.
+Mục này vẫn xuất hiện khi giỏ trống. Bước thanh toán cũng hiển thị tài khoản nhận đơn,
+cho phép đăng nhập/đăng xuất mà vẫn giữ giỏ hàng và thông tin đang điền.
+Khách có thể đăng nhập bằng **số di động Việt Nam + mã OTP qua SMS** hoặc **Google**.
+Đơn đặt khi đã đăng nhập được lưu vào tài khoản, phân trang 20 đơn, xem trạng thái,
+chi tiết size/màu, thanh toán, hãng vận chuyển và mã vận đơn. Bấm **Cập nhật trạng thái**
+để lấy dữ liệu mới nhất sau khi nhân viên xử lý đơn trong admin.
+Các mục **Tất cả**, **Đang xử lý** (chờ xác nhận, chuẩn bị, đang giao) và **Lịch sử**
+(đã giao, đã hủy) lọc trước khi phân trang. Số lượng tính trên toàn bộ đơn của tài khoản.
+Đăng xuất không xóa lịch sử đã lưu; đăng nhập lại cùng tài khoản để xem tiếp.
+Nên đăng nhập Google trước khi điền thông tin: việc chuyển sang Google tải lại trang,
+nên thông tin checkout chưa gửi không được giữ qua chuyển hướng OAuth.
+
+Khách chưa đăng nhập vẫn đặt COD được. Biên nhận riêng được lưu trong cookie HttpOnly
+trên thiết bị, tối đa 5 đơn và 7 ngày; trang thành công đọc đơn thật qua biên nhận này.
+Đăng nhập trên cùng trình duyệt sẽ gắn các biên nhận hợp lệ vào tài khoản.
+Đăng xuất xóa biên nhận trên trình duyệt và giữ giỏ hàng; đơn đã lưu vẫn ở tài khoản.
+Đơn trước nâng cấp không tự nhận qua số điện thoại/email nhập khi mua: cần cửa hàng xác minh.
+Nếu phiên đăng nhập đổi trong lúc một lần thanh toán chưa có kết quả chắc chắn,
+kiểm tra lịch sử hoặc liên hệ shop trước khi đặt lại; hệ thống giữ mã yêu cầu để tránh đơn trùng.
+
+Áp dụng `supabase/migrations/20261013090202_veloce_customer_accounts.sql` trước khi deploy.
+Sau đó áp dụng `20261013122916_veloce_customer_order_groups.sql` cho bộ lọc và số lượng đơn.
+Các bảng đơn hàng và lịch sử admin vẫn chỉ admin đọc được; RPC khách trả đúng phần
+thông tin cần hiển thị, không trả ghi chú nội bộ hoặc nhật ký nhân viên.
+Kiểm thử database: `node tests/customer-accounts-db.mjs <path-to-pglite/dist/index.js>`.
+
+### Bật đăng nhập thật
+
+Cả Phone và Google hiện đang tắt trên project Supabase. Giao diện sẽ thông báo đúng
+tình trạng thay vì giả lập đăng nhập. Cấu hình trong **Supabase Dashboard → Authentication**:
+
+1. **URL Configuration:** Site URL là domain thật của shop. Thêm redirect URL chính xác
+   `https://<domain-shop>/api/auth/callback` và `http://localhost:3000/api/auth/callback`
+   khi phát triển; thêm URL tương ứng cho preview nếu dùng. Callback chỉ quay về giỏ hàng hoặc thanh toán,
+   không nhận đường dẫn tùy ý. Khai báo `NEXT_PUBLIC_SITE_URL` theo `.env.example`.
+2. **Sign In / Providers → Google:** bật Google, nhập OAuth client ID và secret trực tiếp
+   tại Supabase. Google Cloud Console dùng Authorized redirect URI
+   `https://jtizooyjnllostamffpp.supabase.co/auth/v1/callback`; thêm domain shop vào
+   Authorized JavaScript origins. Nếu consent screen ở chế độ testing, thêm tài khoản test.
+3. **Phone:** bật Phone và cấu hình nhà cung cấp SMS được Supabase hỗ trợ cùng khóa,
+   sender/service ID. Dùng OTP 6 chữ số, giữ xác thực SMS thực tế và giới hạn gửi mã.
+   Không đưa khóa SMS hoặc Google client secret vào frontend, Git hay chat.
+4. Sau khi lưu, đợi tối đa 60 giây rồi tải lại giỏ hàng. Kiểm tra nhận/nhập OTP,
+   Google callback, đặt COD khi đăng nhập, cập nhật đơn từ admin rồi kiểm tra trên
+   thiết bị khác. Kiểm tra thêm đăng nhập sau một đơn guest trên cùng trình duyệt.
+
+Project Supabase này dùng chung với ứng dụng khác: giữ nguyên các redirect URL và
+cấu hình hiện có khi bổ sung domain shop. Hai phương thức đăng nhập tạo tài khoản
+theo identity riêng; hệ thống không tự gộp tài khoản Google và số điện thoại.
+
+Tài liệu chính thức: [Phone login](https://supabase.com/docs/guides/auth/phone-login),
+[Google OAuth](https://supabase.com/docs/guides/auth/social-login/auth-google).
+
 ## Tiến độ
 
 Xem mục 7 của `PLAN.md` cho lộ trình theo phase. Trạng thái hiện tại được cập

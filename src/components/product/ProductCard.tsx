@@ -1,19 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Star } from "lucide-react";
-import { Badge } from "@/components/ui/Badge";
+import { ProductBadge } from "@/components/product/ProductBadge";
 import { TiltCard } from "@/components/ui/TiltCard";
 import { formatVND } from "@/lib/format";
 import type { Product } from "@/lib/queries/products";
 import type { Locale } from "@/lib/i18n/messages";
 import { getMessages, localizedHref } from "@/lib/i18n/messages";
-
-const BADGE_LABEL: Record<string, string> = {
-  NEW: "Mới",
-  SALE: "Giảm giá",
-  HOT: "Bán chạy",
-  LIMITED: "Giới hạn",
-};
 
 export function ProductCard({ product, locale = "vi" }: { product: Product; locale?: Locale }) {
   const copy = getMessages(locale).product;
@@ -61,12 +54,12 @@ export function ProductCard({ product, locale = "vi" }: { product: Product; loca
             </div>
           )}
 
-          <div className="absolute left-3 top-3 flex flex-col gap-1.5">
+          <div className="absolute left-2 top-2 flex max-w-[calc(100%-1rem)] flex-col items-start gap-2 sm:left-3 sm:top-3 sm:max-w-[calc(100%-1.5rem)]">
             {product.badge && (
-              <Badge tone="lime">{locale === "en" ? ({ NEW: "New", SALE: "Sale", HOT: "Bestseller", LIMITED: "Limited" }[product.badge] ?? product.badge) : BADGE_LABEL[product.badge] ?? product.badge}</Badge>
+              <ProductBadge badge={product.badge} locale={locale} />
             )}
             {discountPercent !== null && discountPercent > 0 && (
-              <Badge tone="brand">-{discountPercent}%</Badge>
+              <ProductBadge discountPercent={discountPercent} locale={locale} />
             )}
           </div>
 

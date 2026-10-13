@@ -24,14 +24,21 @@ export function CartPageContent({
   const items = useCartStore((state) => state.items);
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-  if (!hydrated) return null;
+  if (!hydrated) return (
+    <div className="mx-auto flex max-w-md flex-col items-center gap-4 px-4 py-24 text-center" aria-busy="true" aria-label={copy.title}>
+      <div className="h-12 w-12 rounded-xl bg-ink-800" aria-hidden="true" />
+      <h1 className="font-display text-2xl font-bold text-fg">{copy.title}</h1>
+      <p className="invisible" aria-hidden="true">{copy.emptyBody}</p>
+      <div className="h-11 w-48 rounded-full bg-ink-800" aria-hidden="true" />
+    </div>
+  );
 
   if (items.length === 0) {
     return (
       <div className="mx-auto flex max-w-md flex-col items-center gap-4 px-4 py-24 text-center">
         <ShoppingBag className="h-12 w-12 text-fg-subtle" aria-hidden="true" />
         <h1 className="font-display text-2xl font-bold text-fg">{copy.emptyTitle}</h1>
-        <p className="text-fg-muted">{copy.emptyBody}</p>
+        <p className="text-fg">{copy.emptyBody}</p>
         <Button href="/san-pham">{copy.continue}</Button>
       </div>
     );

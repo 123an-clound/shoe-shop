@@ -8,9 +8,10 @@ import { FreeshipProgress } from "@/components/cart/FreeshipProgress";
 import { useCartStore } from "@/store/cart";
 import { formatVND } from "@/lib/format";
 import { useLocaleContext } from "@/components/i18n/LocaleProvider";
+import { customerCopy } from "@/lib/customer/copy";
 
 export function CartDrawer({ freeshipThreshold }: { freeshipThreshold: number }) {
-  const { messages } = useLocaleContext();
+  const { messages, locale } = useLocaleContext();
   const isOpen = useCartStore((state) => state.isOpen);
   const closeCart = useCartStore((state) => state.closeCart);
   const items = useCartStore((state) => state.items);
@@ -51,6 +52,7 @@ export function CartDrawer({ freeshipThreshold }: { freeshipThreshold: number })
           </div>
         </div>
       )}
+      <Button href="/gio-hang#don-hang" variant="glass" className="mt-4 w-full" onClick={closeCart}>{customerCopy(locale).link}</Button>
     </Drawer>
   );
 }

@@ -30,7 +30,6 @@ export default async function AdminDashboardLayout({
     .maybeSingle();
 
   if (!admin) {
-    await supabase.auth.signOut();
     redirect("/admin/dang-nhap");
   }
 

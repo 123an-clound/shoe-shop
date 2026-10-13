@@ -522,6 +522,7 @@ export type Database = {
           customer_email: string | null
           customer_name: string
           customer_phone: string
+          customer_user_id: string | null
           discount: number
           id: string
           internal_note: string | null
@@ -551,6 +552,7 @@ export type Database = {
           customer_email?: string | null
           customer_name: string
           customer_phone: string
+          customer_user_id?: string | null
           discount?: number
           id?: string
           internal_note?: string | null
@@ -580,6 +582,7 @@ export type Database = {
           customer_email?: string | null
           customer_name?: string
           customer_phone?: string
+          customer_user_id?: string | null
           discount?: number
           id?: string
           internal_note?: string | null
@@ -1181,6 +1184,38 @@ export type Database = {
       }
     }
     Functions: {
+      veloce_customer_orders_by_status: {
+        Args: { p_page?: number; p_scope?: string }
+        Returns: Json
+      }
+      veloce_customer_orders: { Args: { p_page?: number }; Returns: Json }
+      veloce_customer_receipt: {
+        Args: { p_order_id: string; p_token: string }
+        Returns: Json
+      }
+      veloce_claim_customer_order: {
+        Args: { p_order_id: string; p_token: string }
+        Returns: boolean
+      }
+      veloce_place_order_with_receipt: {
+        Args: {
+          p_address: string
+          p_coupon_code?: string
+          p_customer_email?: string
+          p_customer_name: string
+          p_customer_phone: string
+          p_idempotency_key: string
+          p_items: Json
+          p_note?: string
+          p_receipt_token: string
+        }
+        Returns: {
+          order_code: string
+          order_id: string
+          order_total: number
+        }[]
+      }
+
       apple_list_admins: {
         Args: never
         Returns: {

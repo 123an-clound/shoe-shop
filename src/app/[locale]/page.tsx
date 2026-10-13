@@ -54,7 +54,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
   const sections: Record<string, ReactNode> = {
     hero: <Hero locale={locale} headline={(locale === "en" ? settings.hero_headline_en : settings.hero_headline) || settings.store_name} subheadline={(locale === "en" ? settings.hero_subheadline_en : settings.hero_subheadline) || (locale === "en" ? settings.slogan_en : settings.slogan)} imageUrl={heroImage} imageAlt={products[0] ? (locale === "en" ? products[0].name_en || products[0].name : products[0].name) : settings.store_name} primaryLabel={locale === "en" ? settings.hero_cta_label_en : settings.hero_cta_label_vi} />,
     marquee: <Marquee items={categories.map((c) => (locale === "en" ? c.name_en || c.name : c.name).toUpperCase())} />,
-    categories: <CategoryShowcase categories={categories} locale={locale} />,
+    categories: <CategoryShowcase categories={categories} products={products} locale={locale} />,
     featured: <FeaturedGrid products={products} locale={locale} />,
     story: <ScrollStory storeName={settings.store_name} images={storyImages} locale={locale} />,
     stats: <Stats products={products} categoryCount={categories.length} locale={locale} />,

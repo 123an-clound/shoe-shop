@@ -4,7 +4,7 @@ import { getProductBySlug, getProducts, getRelatedProducts } from "@/lib/queries
 import { Gallery } from "@/components/product/Gallery";
 import { ProductPurchasePanel } from "@/components/product/ProductPurchasePanel";
 import { ProductSelectionProvider } from "@/components/product/ProductSelectionProvider";
-import { Badge } from "@/components/ui/Badge";
+import { ProductBadge } from "@/components/product/ProductBadge";
 import { Tabs } from "@/components/ui/Tabs";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { formatVND } from "@/lib/format";
@@ -93,8 +93,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             {name}
           </h1>
 
-          <div className="mt-3 flex items-center gap-3">
-            {product.badge && <Badge tone="lime">{product.badge}</Badge>}
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            {product.badge && <ProductBadge badge={product.badge} locale={locale} />}
             <div className="flex items-center gap-1 text-sm text-fg-muted">
               <Star className="h-4 w-4 fill-neon-lime text-neon-lime" aria-hidden="true" />
               <span className="tabular-nums">{product.rating.toFixed(1)}</span>
@@ -102,7 +102,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             </div>
           </div>
 
-          <div className="mt-4 flex items-baseline gap-3">
+          <div className="mt-4 flex flex-wrap items-baseline gap-3">
             <span className="font-display text-3xl font-bold tabular-nums text-fg">
               {formatVND(product.price)}
             </span>
@@ -111,7 +111,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 <span className="tabular-nums text-lg text-fg-subtle line-through">
                   {formatVND(product.original_price)}
                 </span>
-                {discountPercent !== null && <Badge tone="brand">-{discountPercent}%</Badge>}
+                {discountPercent !== null && discountPercent > 0 && <ProductBadge discountPercent={discountPercent} locale={locale} />}
               </>
             )}
           </div>
