@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { addReceipt, parseReceipts, customerOrderSchema, customerOrderScope, orderInScope, customerGroupedHistorySchema } from "../src/lib/customer/orders";
-import { normalizePhone, authOrigin, customerCartPath, customerReturnPath, customerReturnHash, checkoutIdentityMatches } from "../src/lib/customer/identity";
+import { normalizePhone, normalizeEmail, isOtpCode, authOrigin, customerCartPath, customerReturnPath, customerReturnHash, checkoutIdentityMatches } from "../src/lib/customer/identity";
 import { placeOrderInputSchema } from "../src/lib/validation/order";
 import { customerCopy } from "../src/lib/customer/copy";
 
@@ -80,4 +80,12 @@ test("current orders and history cover every state without accepting unknown gro
   for (const value of [undefined, "SHIPPING", ["active"], "any"]) assert.equal(customerOrderScope(value), "all");
   assert.equal(customerGroupedHistorySchema.safeParse({orders:[], total:0, active_count:0, history_count:0, page:1}).success, true);
   assert.equal(customerGroupedHistorySchema.safeParse({orders:[], total:0, active_count:-1, history_count:0, page:1}).success, false);
+});
+
+test("normalizes customer email and OTP codes", () => {
+  assert.equal(normalizeEmail("  Ban@Gmail.COM "), "ban@gmail.com");
+  for (const value of ["", "ban", "ban@", "@gmail.com", "ban@gmail", "a b@gmail.com"]) assert.equal(normalizeEmail(value), null);
+  assert.equal(isOtpCode("123456"), true);
+  assert.equal(isOtpCode("12345678"), true);
+  for (const value of ["", "12345", "12a456", "12345678901"]) assert.equal(isOtpCode(value), false);
 });

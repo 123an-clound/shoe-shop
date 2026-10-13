@@ -3,7 +3,7 @@
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { normalizePhone, customerCartPath, customerReturnPath, customerAuthTarget, authOrigin, type CustomerAuthTarget } from "@/lib/customer/identity";
+import { normalizeEmail, isOtpCode, customerCartPath, customerReturnPath, customerAuthTarget, authOrigin, type CustomerAuthTarget } from "@/lib/customer/identity";
 import { customerCopy } from "@/lib/customer/copy";
 import { getCustomerProviders } from "@/lib/customer/providers";
 import { claimReceipts, clearReceipts } from "@/lib/customer/receipts";
@@ -19,28 +19,28 @@ function errorText(code: string | undefined, locale: Locale) {
   const copy = customerCopy(locale);
   if (code === "otp_expired") return copy.expired;
   if (code?.includes("rate_limit")) return copy.rateLimit;
-  if (["phone_provider_disabled", "provider_disabled", "signup_disabled"].includes(code || "")) return copy.providerUnavailable;
+  if (["email_provider_disabled", "provider_disabled", "signup_disabled"].includes(code || "")) return copy.providerUnavailable;
   return copy.authError;
 }
-export async function sendCustomerOtp(phoneInput: string, language: Locale): Promise<Result> {
+export async function sendCustomerOtp(emailInput: string, language: Locale): Promise<Result> {
   const locale = localeOf(language), copy = customerCopy(locale);
-  const phone = typeof phoneInput === "string" && phoneInput.length <= 40 ? normalizePhone(phoneInput) : null;
-  if (!phone) return { success: false, error: copy.invalidPhone };
+  const email = typeof emailInput === "string" ? normalizeEmail(emailInput) : null;
+  if (!email) return { success: false, error: copy.invalidEmail };
   try {
-    if (!(await getCustomerProviders()).phone) return { success: false, error: copy.providerUnavailable };
+    if (!(await getCustomerProviders()).email) return { success: false, error: copy.providerUnavailable };
     const supabase = await createClient();
-    const { error } = await supabase.auth.signInWithOtp({ phone, options: { shouldCreateUser: true, channel: "sms" } });
+    const { error } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
     return error ? { success: false, error: errorText(error.code, locale) } : { success: true };
   } catch { return { success: false, error: copy.authError }; }
 }
-export async function verifyCustomerOtp(phoneInput: string, token: string, language: Locale): Promise<Result> {
+export async function verifyCustomerOtp(emailInput: string, token: string, language: Locale): Promise<Result> {
   const locale = localeOf(language), copy = customerCopy(locale);
-  const phone = typeof phoneInput === "string" && phoneInput.length <= 40 ? normalizePhone(phoneInput) : null;
-  if (!phone) return { success: false, error: copy.invalidPhone };
-  if (typeof token !== "string" || !/^\d{6}$/.test(token)) return { success: false, error: copy.invalidOtp };
+  const email = typeof emailInput === "string" ? normalizeEmail(emailInput) : null;
+  if (!email) return { success: false, error: copy.invalidEmail };
+  if (typeof token !== "string" || !isOtpCode(token)) return { success: false, error: copy.invalidOtp };
   try {
     const supabase = await createClient();
-    const { data, error } = await supabase.auth.verifyOtp({ phone, token, type: "sms" });
+    const { data, error } = await supabase.auth.verifyOtp({ email, token, type: "email" });
     if (error || !data.user) return { success: false, error: errorText(error?.code, locale) };
     const claimed = await claimReceipts().catch(() => false);
     revalidateAccount(locale);

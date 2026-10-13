@@ -6,6 +6,6 @@ export async function getCustomerProviders() {
     });
     if (!response.ok) throw new Error("Auth settings unavailable");
     const data = await response.json();
-    return { phone: data.external?.phone === true, google: data.external?.google === true, available: true };
-  } catch { return { phone: false, google: false, available: false }; }
+    return { email: data.external?.email === true, google: data.external?.google === true, available: true };
+  } catch { return { email: false, google: false, available: false }; }
 }

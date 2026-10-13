@@ -4,6 +4,13 @@ export function normalizePhone(value: string): string | null {
   return /^\+84[35789]\d{8}$/.test(phone) ? phone : null;
 }
 
+export function normalizeEmail(value: string): string | null {
+  const email = value.trim().toLowerCase();
+  return email.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) ? email : null;
+}
+
+export function isOtpCode(value: string): boolean { return /^\d{6,10}$/.test(value); }
+
 export function customerCartPath(locale: string): string { return `${locale === "en" ? "/en" : ""}/gio-hang`; }
 
 export type CustomerAuthTarget = "cart" | "checkout";
