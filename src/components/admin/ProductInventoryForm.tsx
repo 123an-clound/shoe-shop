@@ -10,8 +10,9 @@ import { getProductColors, hasVariantInventory } from "@/lib/productVariants";
 import { productInventorySchema, toInventoryInput } from "@/lib/validation/inventory";
 import { updateProductInventory } from "@/lib/actions/inventory";
 import type { AdminProduct } from "@/lib/queries/admin";
+import { getSizeLabel } from "@/lib/sizeLabels";
 
-type InventoryProduct = Pick<AdminProduct, "id" | "name" | "colors" | "sizes" | "stock" | "updated_at">;
+type InventoryProduct = Pick<AdminProduct, "id" | "name" | "colors" | "sizes" | "stock" | "updated_at" | "size_guide">;
 
 export function ProductInventoryForm({ product }: { product: InventoryProduct }) {
   const router = useRouter();
@@ -62,7 +63,7 @@ export function ProductInventoryForm({ product }: { product: InventoryProduct })
   return (
     <form onSubmit={handleSubmit} noValidate className="flex max-w-2xl flex-col gap-5" aria-busy={saving}>
       <p className="text-sm text-fg-muted">Điều chỉnh số lượng của <strong className="text-fg">{product.name}</strong>. Tổng tồn kho được tính từ tất cả màu và size.</p>
-      <ProductInventoryInputs colors={colors} sizes={product.sizes} stock={product.stock} errors={errors} disabled={saving}
+      <ProductInventoryInputs colors={colors} sizes={product.sizes} stock={product.stock} errors={errors} disabled={saving} sizeLabels={Object.fromEntries(product.sizes.map((size) => [size, getSizeLabel(product.size_guide, size)]))}
         onChange={(next) => { setColors(next); setDirty(true); setErrors({}); setError(""); }} />
       {!canEdit && <Link href={`/admin/san-pham/${product.id}`} className="inline-flex min-h-11 items-center text-sm text-fg underline focus-visible:outline-2 focus-visible:outline-brand">Mở sản phẩm để thêm màu và size</Link>}
       {error && <p role="alert" className="text-sm text-red-400">{error}</p>}

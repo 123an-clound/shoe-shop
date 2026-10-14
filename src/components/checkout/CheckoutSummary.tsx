@@ -23,7 +23,7 @@ export function CheckoutSummary({
               className="flex justify-between gap-4"
             >
               <span>
-                {(locale === "en" ? item.nameEn || item.name : item.name)} · {item.color} · {messages.product.size} {item.size} × {item.quantity}
+                {(locale === "en" ? item.nameEn || item.name : item.name)} · {item.color} · {messages.product.size} {item.sizeLabel ?? item.size} × {item.quantity}
               </span>
               <span className="shrink-0 tabular-nums text-fg">
                 {formatVND(item.price * item.quantity)}

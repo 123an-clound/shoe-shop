@@ -39,7 +39,7 @@ export function ProductSizeGuideField({ form }: { form: UseFormReturn<ProductFor
               step={0.1}
               className="min-w-0 w-full px-3"
               error={errors?.[index]?.cm?.message}
-              {...form.register(`sizeGuide.${index}.cm`, { valueAsNumber: true })}
+              {...form.register(`sizeGuide.${index}.cm`, { setValueAs: (value) => value === "" ? undefined : Number(value) })}
             />
             <button
               type="button"
@@ -49,11 +49,15 @@ export function ProductSizeGuideField({ form }: { form: UseFormReturn<ProductFor
             >
               <X className="h-4 w-4" aria-hidden="true" />
             </button>
+            <div className="col-span-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <Input label="Nhãn size gốc (tuỳ chọn)" aria-label={`Nhãn size dòng ${index + 1}`} placeholder="24-25/15-15,5cm" maxLength={120} error={errors?.[index]?.label?.message} {...form.register(`sizeGuide.${index}.label`, { setValueAs: (value) => value === "" ? undefined : value })} />
+              <Input label="Dài bàn chân tối đa (cm, tuỳ chọn)" aria-label={`Chiều dài tối đa dòng ${index + 1}`} type="number" min={0.1} max={50} step={0.1} error={errors?.[index]?.cmMax?.message} {...form.register(`sizeGuide.${index}.cmMax`, { setValueAs: (value) => value === "" ? undefined : Number(value) })} />
+            </div>
           </div>
         ))}
         <button
           type="button"
-          onClick={() => append({ size: 0, cm: 0 })}
+          onClick={() => append({ size: 0 })}
           disabled={fields.length >= 60}
           className="flex min-h-11 items-center gap-1.5 self-start rounded-lg px-2 text-sm text-fg hover:bg-ink-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:opacity-50"
         >

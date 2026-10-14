@@ -5,13 +5,14 @@ import { Input } from "@/components/ui/Input";
 import { getInventoryTotal, hasVariantInventory } from "@/lib/productVariants";
 import type { ProductColor } from "@/types";
 
-export function ProductInventoryInputs({ colors, sizes, stock, onChange, errors = {}, disabled = false }: {
+export function ProductInventoryInputs({ colors, sizes, stock, onChange, errors = {}, disabled = false, sizeLabels = {} }: {
   colors: ProductColor[];
   sizes: number[];
   stock: number;
   onChange: (colors: ProductColor[]) => void;
   errors?: Record<string, string | undefined>;
   disabled?: boolean;
+  sizeLabels?: Record<number, string>;
 }) {
   const fieldId = useId();
   const tracked = hasVariantInventory(colors);
@@ -44,7 +45,7 @@ export function ProductInventoryInputs({ colors, sizes, stock, onChange, errors 
                 {sizes.map((size) => {
                   const quantity = color.inventory?.find((entry) => entry.size === size)?.quantity ?? 0;
                   return (
-                    <Input key={size} label={`Size ${size}`} aria-label={`Tồn kho ${color.name || `màu ${colorIndex + 1}`} size ${size}`}
+                    <Input key={size} label={`Size ${sizeLabels[size] ?? size}`} aria-label={`Tồn kho ${color.name || `màu ${colorIndex + 1}`} size ${sizeLabels[size] ?? size}`}
                       id={`${fieldId}-inventory-${colorIndex}-${size}`} type="number" min={0} max={2147483647} step={1} inputMode="numeric"
                       value={Number.isNaN(quantity) ? "" : quantity} error={errors[`${colorIndex}.${size}`]}
                       className="min-w-0 w-full text-base tabular-nums sm:text-sm"

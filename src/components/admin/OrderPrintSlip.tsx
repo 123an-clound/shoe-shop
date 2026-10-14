@@ -16,7 +16,7 @@ export function OrderPrintSlip({ order, items, storeName }: { order: Order; item
     {order.note && <p className="mt-2 whitespace-pre-wrap">Ghi chú khách: {order.note}</p>}
     <p className="mt-3">Vận chuyển: {order.shipping_carrier || "Chưa bàn giao"} · Mã vận đơn: {order.tracking_number || "Chưa có"}</p>
     <table className="mt-5 w-full text-sm"><caption className="mb-2 text-left text-lg font-bold">Sản phẩm cần đóng gói</caption><thead><tr><th scope="col" className="text-left">Sản phẩm / Màu / Size</th><th scope="col">Số lượng</th><th scope="col" className="text-right">Thành tiền</th></tr></thead>
-      <tbody>{items.map((item,index)=><tr key={index}><td className="py-3">{item.name}<br />Màu {item.color} · Size {item.size}</td><td className="text-center">{item.quantity}</td><td className="text-right">{formatVND(item.price*item.quantity)}</td></tr>)}</tbody>
+      <tbody>{items.map((item,index)=><tr key={index}><td className="py-3">{item.name}<br />Màu {item.color} · Size {item.size_label ?? item.size}</td><td className="text-center">{item.quantity}</td><td className="text-right">{formatVND(item.price*item.quantity)}</td></tr>)}</tbody>
     </table>
     <div className="ml-auto mt-5 max-w-sm space-y-2 text-sm">
       <p className="flex justify-between"><span>Tạm tính</span><span>{formatVND(order.subtotal)}</span></p>

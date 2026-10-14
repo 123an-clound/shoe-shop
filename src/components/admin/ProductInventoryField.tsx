@@ -3,11 +3,13 @@
 import { useWatch, type UseFormReturn } from "react-hook-form";
 import { ProductInventoryInputs } from "@/components/admin/ProductInventoryInputs";
 import type { ProductFormValues } from "@/lib/validation/product";
+import { getSizeLabel } from "@/lib/sizeLabels";
 
 export function ProductInventoryField({ form }: { form: UseFormReturn<ProductFormValues> }) {
   const colors = useWatch({ control: form.control, name: "colors" });
   const sizes = useWatch({ control: form.control, name: "sizes" });
   const stock = useWatch({ control: form.control, name: "stock" });
+  const sizeGuide = useWatch({ control: form.control, name: "sizeGuide" });
   const errors: Record<string, string | undefined> = {};
   colors.forEach((color, index) => {
     const inventoryErrors = form.formState.errors.colors?.[index]?.inventory;
@@ -17,6 +19,6 @@ export function ProductInventoryField({ form }: { form: UseFormReturn<ProductFor
     });
   });
 
-  return <ProductInventoryInputs colors={colors} sizes={sizes} stock={stock} errors={errors}
+  return <ProductInventoryInputs colors={colors} sizes={sizes} stock={stock} errors={errors} sizeLabels={Object.fromEntries(sizes.map((size) => [size, getSizeLabel(sizeGuide, size)]))}
     onChange={(next) => form.setValue("colors", next, { shouldDirty: true, shouldValidate: true })} />;
 }

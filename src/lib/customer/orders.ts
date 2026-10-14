@@ -12,7 +12,7 @@ export function addReceipt(existing: OrderReceipt[], receipt: OrderReceipt): Ord
 export const customerOrderSchema = z.object({
   id: z.string().uuid(), code: z.string(), created_at: z.string(),
   status: z.enum(["pending", "confirmed", "shipping", "done", "cancelled"]),
-  items: z.array(z.object({ name: z.string(), size: z.union([z.string(), z.number()]), color: z.string(), quantity: z.number(), price: z.number() })),
+  items: z.array(z.object({ name: z.string(), size: z.union([z.string(), z.number()]), size_label: z.string().min(1).max(120).optional(), color: z.string(), quantity: z.number(), price: z.number() })),
   subtotal: z.number(), discount: z.number(), shipping_fee: z.number(), total: z.number(),
   shipping_carrier: z.string().nullable(), tracking_number: z.string().nullable(), packed_at: z.string().nullable(),
   payment_status: z.enum(["unpaid", "paid", "refunded"]).nullable(),

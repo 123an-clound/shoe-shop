@@ -3,7 +3,7 @@ import { sizeGuideSchema } from "@/lib/sizeGuide";
 
 export const PRODUCT_BADGES = ["NEW", "SALE", "HOT", "LIMITED"] as const;
 export const AVAILABLE_SIZES = [39, 40, 41, 42, 43, 44, 45] as const;
-export const MAX_PRODUCT_IMAGES = 10;
+export const MAX_PRODUCT_IMAGES = 20;
 
 export const productColorSchema = z.object({
   name: z.string().min(1, "Nhập tên màu"),

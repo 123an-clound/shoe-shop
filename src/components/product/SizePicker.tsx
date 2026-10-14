@@ -8,12 +8,14 @@ export function SizePicker({
   onSelect,
   disabled,
   unavailableSizes = [],
+  labels = {},
 }: {
   sizes: number[];
   selected: number | null;
   onSelect: (size: number) => void;
   disabled?: boolean;
   unavailableSizes?: number[];
+  labels?: Record<number, string>;
 }) {
   return (
     <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Chọn size">
@@ -26,10 +28,10 @@ export function SizePicker({
           role="radio"
           aria-checked={selected === size}
           disabled={unavailable}
-          aria-label={`Size ${size}${unavailable ? " — Hết hàng" : ""}`}
+          aria-label={`Size ${labels[size] ?? size}${unavailable ? " — Hết hàng" : ""}`}
           onClick={() => onSelect(size)}
           className={cn(
-            "flex h-11 w-11 items-center justify-center rounded-lg border text-sm tabular-nums transition-colors focus-visible:outline-2 focus-visible:outline-brand motion-reduce:transition-none",
+            "flex min-h-11 min-w-11 max-w-full items-center justify-center whitespace-normal break-words rounded-lg border px-3 py-2 text-sm tabular-nums transition-colors focus-visible:outline-2 focus-visible:outline-brand motion-reduce:transition-none",
             unavailable
               ? "cursor-not-allowed border-ink-700 text-fg-subtle line-through"
               : selected === size
@@ -37,7 +39,7 @@ export function SizePicker({
                 : "border-ink-700 text-fg-muted hover:text-fg",
           )}
         >
-          {size}
+          {labels[size] ?? size}
         </button>
       ); })}
     </div>

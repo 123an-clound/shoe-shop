@@ -32,7 +32,7 @@ export function CustomerOrderCard({ order, locale, headingLevel = 3 }: { order: 
         <summary className="cursor-pointer rounded text-sm text-fg underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-brand">{copy.details}</summary>
         <ul className="mt-3 space-y-3">
           {order.items.map((item, index) => <li key={index} className="flex flex-wrap justify-between gap-2 text-sm">
-            <div><p className="text-fg">{item.name}</p><p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-fg-muted">{copy.size} {item.size} · {copy.quantity} {item.quantity} · <span className="inline-block h-3 w-3 rounded-full border border-ink-700" style={{ backgroundColor: /^#[0-9a-f]{6}$/i.test(item.color) ? item.color : undefined }} aria-hidden="true" />{item.color}</p></div>
+            <div><p className="text-fg">{item.name}</p><p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-fg-muted">{copy.size} {item.size_label ?? item.size} · {copy.quantity} {item.quantity} · <span className="inline-block h-3 w-3 rounded-full border border-ink-700" style={{ backgroundColor: /^#[0-9a-f]{6}$/i.test(item.color) ? item.color : undefined }} aria-hidden="true" />{item.color}</p></div>
             <p className="tabular-nums text-fg">{formatVND(item.price * item.quantity)}</p>
           </li>)}
         </ul>

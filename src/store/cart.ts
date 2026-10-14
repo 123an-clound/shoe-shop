@@ -12,6 +12,7 @@ export type CartItem = {
   price: number;
   image: string;
   size: number;
+  sizeLabel?: string;
   color: string;
   quantity: number;
 };
@@ -50,7 +51,7 @@ export const useCartStore = create<CartState>()(
           if (existing) {
             return {
               items: state.items.map((i) =>
-                i === existing ? { ...i, quantity: i.quantity + item.quantity } : i,
+                i === existing ? { ...i, sizeLabel: item.sizeLabel ?? i.sizeLabel, quantity: i.quantity + item.quantity } : i,
               ),
             };
           }

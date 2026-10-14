@@ -11,6 +11,7 @@ import { usePrefersReducedMotion } from "@/lib/hooks/useMediaQuery";
 import type { Product } from "@/lib/queries/products";
 import { useLocaleContext } from "@/components/i18n/LocaleProvider";
 import { getColorImage, getProductColors, getVariantStock } from "@/lib/productVariants";
+import { getSizeLabel } from "@/lib/sizeLabels";
 
 /** Chọn màu + size xong mới thêm được vào giỏ. Dính đáy màn hình trên mobile (Phụ lục A2 PLAN.md). */
 export function AddToCartBar({
@@ -59,6 +60,7 @@ export function AddToCartBar({
       price: product.price,
       image,
       size: selectedSize,
+      sizeLabel: getSizeLabel(product.size_guide, selectedSize),
       color: selectedColor,
       quantity: chosenQuantity,
     });

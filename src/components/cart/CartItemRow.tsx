@@ -34,7 +34,7 @@ export function CartItemRow({ item }: { item: CartItem }) {
         </div>
 
         <p className="text-xs text-fg-subtle">
-          {item.color} · {messages.product.size} {item.size}
+          {item.color} · {messages.product.size} {item.sizeLabel ?? item.size}
         </p>
 
         <div className="mt-1 flex items-center justify-between">

@@ -7,7 +7,7 @@ const MIME_BY_EXTENSION = {
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
-export const PRODUCT_IMAGE_PATH_PATTERN = /^products\/[a-z0-9-]+-(?:[1-9]|10)-[a-f0-9-]{36}\.webp$/;
+export const PRODUCT_IMAGE_PATH_PATTERN = /^products\/[a-z0-9-]+-(?:[1-9]|1[0-9]|20)-[a-f0-9-]{36}\.webp$/;
 
 export async function validateUploadedWebp(file: File, path: string): Promise<string | null> {
   if (file.type !== "image/webp" || !path.endsWith(".webp")) return "Ảnh tải lên phải ở định dạng WebP.";

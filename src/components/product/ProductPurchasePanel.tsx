@@ -10,6 +10,7 @@ import { getProductColors, getVariantStock, hasVariantInventory } from "@/lib/pr
 import { useProductSelection } from "@/components/product/ProductSelectionProvider";
 import { useLocaleContext } from "@/components/i18n/LocaleProvider";
 import type { SizeGuideRow } from "@/lib/sizeGuide";
+import { getSizeLabel } from "@/lib/sizeLabels";
 
 /** Gom state chọn màu/size để AddToCartBar dùng — chọn màu trước, size sau (Phụ lục A2 PLAN.md). */
 export function ProductPurchasePanel({ product, sizeGuide }: { product: Product; sizeGuide: SizeGuideRow[] }) {
@@ -36,6 +37,7 @@ export function ProductPurchasePanel({ product, sizeGuide }: { product: Product;
         <div className="mt-3">
           <SizePicker
             sizes={product.sizes}
+            labels={Object.fromEntries(product.sizes.map((size) => [size, getSizeLabel(sizeGuide, size)]))}
             selected={selectedSize}
             onSelect={setSelectedSize}
             disabled={outOfStock}

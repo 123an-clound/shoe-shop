@@ -44,7 +44,7 @@ export function OrderDetailView({ order, events, storeName }: { order: Order; ev
           <section className={card} aria-label="Sản phẩm trong đơn">
             <h2 className="font-semibold text-fg">Sản phẩm cần kiểm & đóng gói</h2>
             {items ? <ul className="mt-4 flex flex-col gap-4">{items.map((item,index)=><li key={index} className="flex flex-wrap items-start justify-between gap-3 border-b border-ink-700 pb-3 text-sm last:border-0 last:pb-0">
-              <div className="min-w-0 flex-1"><p className="break-words font-medium text-fg">{item.name}</p><p className="mt-1 break-words text-fg-muted">Màu {item.color} · Size {item.size} · {item.quantity} đôi</p><p className="mt-1 text-xs text-fg-muted">Đơn giá {formatVND(item.price)}</p></div><span className="shrink-0 tabular-nums text-fg">{formatVND(item.price*item.quantity)}</span>
+              <div className="min-w-0 flex-1"><p className="break-words font-medium text-fg">{item.name}</p><p className="mt-1 break-words text-fg-muted">Màu {item.color} · Size {item.size_label ?? item.size} · {item.quantity} đôi</p><p className="mt-1 text-xs text-fg-muted">Đơn giá {formatVND(item.price)}</p></div><span className="shrink-0 tabular-nums text-fg">{formatVND(item.price*item.quantity)}</span>
             </li>)}</ul> : <p role="alert" className="mt-4 text-sm text-red-400">Không đọc được danh sách sản phẩm. Kiểm tra dữ liệu đơn trước khi đóng gói.</p>}
           </section>
           <section className={card} aria-label="Giá trị đơn hàng">

@@ -1,5 +1,6 @@
 import { Ruler } from "lucide-react";
 import type { SizeGuideRow } from "@/lib/sizeGuide";
+import { formatFootLength } from "@/lib/sizeLabels";
 import { useLocaleContext } from "@/components/i18n/LocaleProvider";
 
 /** Bảng quy đổi chiều dài bàn chân → size — lý do trả hàng số một là sai size (Phụ lục A2 PLAN.md). */
@@ -22,8 +23,8 @@ export function SizeGuide({ rows }: { rows: SizeGuideRow[] }) {
         <tbody className="text-fg">
           {rows.map((row) => (
             <tr key={row.size} className="border-t border-ink-700">
-              <td className="py-2 tabular-nums">{row.size}</td>
-              <td className="py-2 tabular-nums">{row.cm.toFixed(1)} cm</td>
+              <td className="break-words py-2 pr-3 tabular-nums">{row.label ?? row.size}</td>
+              <td className="py-2 tabular-nums">{formatFootLength(row)}</td>
             </tr>
           ))}
         </tbody>

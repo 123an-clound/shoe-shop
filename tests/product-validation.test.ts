@@ -23,22 +23,22 @@ const product = {
   videoUrl: null,
 };
 
-test("products accept up to ten images and reject an eleventh", () => {
-  for (const count of [0, 3, 5, 9, 10]) {
+test("products accept up to twenty images and reject a twenty-first", () => {
+  for (const count of [0, 3, 5, 9, 10, 11, 20]) {
     const images = Array.from({ length: count }, (_, index) => `https://example.com/${index}.webp`);
     assert.equal(productFormSchema.safeParse({ ...product, images }).success, true);
   }
-  const result = productFormSchema.safeParse({ ...product, images: Array(11).fill("https://example.com/image.webp") });
+  const result = productFormSchema.safeParse({ ...product, images: Array(21).fill("https://example.com/image.webp") });
   assert.equal(result.success, false);
-  if (!result.success) assert.equal(result.error.issues[0].message, "Tối đa 10 ảnh");
+  if (!result.success) assert.equal(result.error.issues[0].message, "Tối đa 20 ảnh");
 });
 
-test("upload paths allow ten WebP slots and reject other formats, invalid slots and traversal", () => {
+test("upload paths allow twenty WebP slots and reject other formats, invalid slots and traversal", () => {
   const id = "7ea17c74-94be-4ddf-abd1-d40f63d58c37";
-  for (const slot of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) {
+  for (const slot of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 19, 20]) {
     assert.equal(PRODUCT_IMAGE_PATH_PATTERN.test(`products/giay-mau-${slot}-${id}.webp`), true);
   }
-  for (const path of [`products/giay-mau-0-${id}.webp`, `products/giay-mau-11-${id}.webp`, `products/../giay-mau-1-${id}.webp`, `products/giay-mau-1-${id}.png`, `products/giay-mau-1-${id}.jpg`]) {
+  for (const path of [`products/giay-mau-0-${id}.webp`, `products/giay-mau-21-${id}.webp`, `products/../giay-mau-1-${id}.webp`, `products/giay-mau-1-${id}.png`, `products/giay-mau-1-${id}.jpg`]) {
     assert.equal(PRODUCT_IMAGE_PATH_PATTERN.test(path), false);
   }
 });
