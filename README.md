@@ -133,5 +133,16 @@ Tài liệu chính thức: [Phone login](https://supabase.com/docs/guides/auth/p
 
 ## Tiến độ
 
+Đợt tối ưu mobile/tablet, hiệu năng và bảo mật: xem
+[OPTIMIZATION_REPORT.md](OPTIMIZATION_REPORT.md) để biết thay đổi, số đo, kiểm thử
+và điều kiện còn lại trước phát hành. Migration giới hạn lạm dụng:
+`supabase/migrations/20261015033947_veloce_abuse_protection.sql` đã được áp dụng
+trên project shop; không chạy lại bằng tên/version khác.
+
+Kiểm thử bổ sung: `npm run test:db` chạy PostgreSQL biệt lập bằng PGlite;
+`npm run test:e2e` chạy Chrome và WebKit trên build production. Cài engine bằng
+`npx playwright install webkit` khi máy chưa có. Website không được tự deploy
+trong đợt tối ưu này.
+
 Xem mục 7 của `PLAN.md` cho lộ trình theo phase. Trạng thái hiện tại được cập
 nhật qua các commit `feat(phase-N): ...`.

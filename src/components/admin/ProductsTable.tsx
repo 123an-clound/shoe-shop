@@ -81,12 +81,14 @@ export function ProductsTable({
     <div>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <input
+          aria-label="Tìm sản phẩm theo tên"
           placeholder="Tìm theo tên..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="h-11 flex-1 rounded-lg border border-ink-700 bg-ink-900 px-4 text-sm text-fg placeholder:text-fg-subtle focus:border-brand focus:outline-none"
         />
         <select
+          aria-label="Lọc danh mục sản phẩm"
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
           className="h-11 rounded-lg border border-ink-700 bg-ink-900 px-4 text-sm text-fg focus:border-brand focus:outline-none"
@@ -100,7 +102,23 @@ export function ProductsTable({
         </select>
       </div>
 
-      <div className="mt-4 overflow-x-auto rounded-[var(--radius-card)] border border-ink-700">
+      <div className="mt-4 grid gap-3 lg:hidden">
+        {filtered.map((product) => <article key={product.id} className="min-w-0 rounded-xl border border-ink-700 bg-ink-900 p-4">
+          <div className="flex items-start gap-3">
+            <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-ink-800">{product.images[0] && <Image src={product.images[0]} alt="" fill sizes="64px" className="object-cover" />}</div>
+            <div className="min-w-0 flex-1"><Link href={`/admin/san-pham/${product.id}`} className="font-medium text-fg [overflow-wrap:anywhere] underline">{product.name}</Link><p className="mt-1 text-sm text-fg-muted">{categoryMap.get(product.category_id ?? "") ?? "—"}</p><p className="mt-1 text-sm tabular-nums text-fg">{formatVND(product.price)} · {product.stock} đôi</p></div>
+          </div>
+          {hasVariantInventory(getProductColors(product.colors)) ? <details className="mt-2 text-sm text-fg-muted"><summary className="flex min-h-11 cursor-pointer items-center text-brand">Theo màu & size</summary><ul className="space-y-2">{getProductColors(product.colors).map((color) => <li key={color.hex}>{color.name}: {(color.inventory ?? []).map((entry) => `${entry.size}: ${entry.quantity}`).join(" · ")}</li>)}</ul></details> : <p className="mt-2 text-xs text-fg-muted">Chưa phân bổ biến thể</p>}
+          <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-ink-700 pt-3">
+            <Link href={`/admin/san-pham/${product.id}/ton-kho`} className="flex min-h-11 items-center rounded-lg border border-ink-700 px-3 text-sm text-fg">Tồn kho</Link>
+            <Link href={`/admin/san-pham/${product.id}`} aria-label={`Sửa ${product.name}`} className="flex min-h-11 items-center rounded-lg border border-ink-700 px-3 text-sm text-fg">Sửa</Link>
+            <button type="button" aria-pressed={product.is_published} disabled={busyProductId !== null} onClick={() => handleTogglePublish(product)} className="min-h-11 rounded-lg border border-ink-700 px-3 text-sm text-fg disabled:opacity-50">{product.is_published ? "Đang hiển thị" : "Đang ẩn"}</button>
+            <button type="button" disabled={busyProductId !== null} onClick={() => setDeleteTarget(product)} aria-label={`Xóa ${product.name}`} className="ml-auto min-h-11 rounded-lg px-3 text-sm text-red-400 disabled:opacity-50">Xóa</button>
+          </div>
+        </article>)}
+        {filtered.length === 0 && <p className="py-8 text-center text-fg-muted">Không tìm thấy sản phẩm.</p>}
+      </div>
+      <div className="mt-4 hidden overflow-x-auto rounded-[var(--radius-card)] border border-ink-700 lg:block">
         <table className="w-full min-w-[720px] text-sm">
           <thead className="bg-ink-900 text-left text-fg-muted">
             <tr>

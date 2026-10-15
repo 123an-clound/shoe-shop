@@ -15,7 +15,10 @@ export function HeaderAccount({ locale }: { locale: Locale }) {
   const disclosure = useRef<HTMLDetailsElement>(null);
   useEffect(() => {
     let controller: AbortController | undefined;
-    async function refresh() {
+    let lastRefresh = 0;
+    async function refresh(force = false) {
+      if (!force && Date.now() - lastRefresh < 1000) return;
+      lastRefresh = Date.now();
       controller?.abort();
       const pending = new AbortController(); controller = pending;
       try {
@@ -27,10 +30,12 @@ export function HeaderAccount({ locale }: { locale: Locale }) {
       } catch { if (!pending.signal.aborted) { setSession(null); setError(copy.unavailable); } }
     }
     void refresh();
-    window.addEventListener("focus", refresh);
-    window.addEventListener("pageshow", refresh);
-    window.addEventListener(CUSTOMER_AUTH_CHANGED, refresh);
-    return () => { controller?.abort(); window.removeEventListener("focus", refresh); window.removeEventListener("pageshow", refresh); window.removeEventListener(CUSTOMER_AUTH_CHANGED, refresh); };
+    const onResume = () => { void refresh(); };
+    const onAuthChange = () => { void refresh(true); };
+    window.addEventListener("focus", onResume);
+    window.addEventListener("pageshow", onResume);
+    window.addEventListener(CUSTOMER_AUTH_CHANGED, onAuthChange);
+    return () => { controller?.abort(); window.removeEventListener("focus", onResume); window.removeEventListener("pageshow", onResume); window.removeEventListener(CUSTOMER_AUTH_CHANGED, onAuthChange); };
   }, [pathname, copy.unavailable]);
   const controlClass = "flex h-11 min-w-11 items-center justify-center gap-2 rounded-full px-3 text-fg hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand xl:w-32";
   if (!session?.signedIn) return <LocaleLink href="/gio-hang#don-hang" className={controlClass} aria-label={session ? copy.signIn : copy.account} title={error || undefined}>

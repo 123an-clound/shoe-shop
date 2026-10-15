@@ -33,6 +33,7 @@ export function Hero({
             fill
             loading="eager"
             fetchPriority="high"
+            decoding="sync"
             sizes="(min-width: 1280px) 1216px, (min-width: 1024px) calc(100vw - 64px), (min-width: 640px) calc(100vw - 48px), calc(100vw - 32px)"
             className="object-cover object-center"
           />

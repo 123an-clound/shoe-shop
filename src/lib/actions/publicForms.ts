@@ -15,7 +15,7 @@ export async function submitContactMessage(input: unknown): Promise<PublicFormRe
     const { error } = await supabase.rpc("veloce_submit_contact_message", {
       p_name: parsed.data.name,
       p_email: parsed.data.email,
-      p_phone: null,
+      p_phone: "",
       p_message: parsed.data.message,
       p_locale: parsed.data.locale,
     });

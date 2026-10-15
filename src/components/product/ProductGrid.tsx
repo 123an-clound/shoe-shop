@@ -1,9 +1,9 @@
 import { Reveal } from "@/components/ui/Reveal";
 import { ProductCard } from "@/components/product/ProductCard";
-import type { Product } from "@/lib/queries/products";
+import type { ProductSummary } from "@/lib/queries/products";
 import type { Locale } from "@/lib/i18n/messages";
 
-export function ProductGrid({ products, locale = "vi" }: { products: Product[]; locale?: Locale }) {
+export function ProductGrid({ products, locale = "vi" }: { products: ProductSummary[]; locale?: Locale }) {
   if (products.length === 0) {
     return (
       <p className="py-16 text-center text-fg-muted">

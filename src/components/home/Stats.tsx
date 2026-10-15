@@ -1,4 +1,4 @@
-import type { Product } from "@/lib/queries/products";
+import type { ProductSummary } from "@/lib/queries/products";
 import type { Locale } from "@/lib/i18n/messages";
 import { getMessages } from "@/lib/i18n/messages";
 
@@ -7,7 +7,7 @@ export function Stats({
   categoryCount,
   locale,
 }: {
-  products: Product[];
+  products: ProductSummary[];
   categoryCount: number;
   locale: Locale;
 }) {

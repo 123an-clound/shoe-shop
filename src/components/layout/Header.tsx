@@ -52,7 +52,7 @@ export function Header({ storeName }: { storeName: string }) {
   return (
     <header
       className={cn(
-        "fixed inset-x-0 top-0 z-50 transition-colors duration-300",
+        "storefront-header fixed inset-x-0 top-0 z-50 transition-colors duration-300",
         scrolled ? "glass" : "bg-transparent",
       )}
     >
@@ -82,12 +82,12 @@ export function Header({ storeName }: { storeName: string }) {
           <button
             id="header-cart-icon"
             type="button"
-            onClick={openCart}
+            onClick={(event) => { event.currentTarget.focus({ preventScroll: true }); openCart(); }}
             aria-label={`${messages.controls.openCart}${hydrated && itemCount > 0 ? `, ${itemCount}` : ""}`}
             className="relative flex h-11 w-11 items-center justify-center rounded-full text-fg transition-colors hover:bg-white/5"
           >
             <ShoppingBag
-              className={cn("h-5 w-5", bounce && "animate-bounce")}
+              className={cn("h-5 w-5", bounce && "motion-safe:animate-bounce")}
               aria-hidden="true"
             />
             {hydrated && itemCount > 0 && (

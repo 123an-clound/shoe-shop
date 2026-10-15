@@ -78,7 +78,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     : null;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 pb-24 pt-10 sm:px-6 lg:px-8 lg:pb-10">
+    <div className="product-detail mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productStructuredData).replace(/</g, "\\u003c") }}
@@ -87,7 +87,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
         <Gallery images={product.images} productName={name} videoUrl={product.video_url} colors={product.colors} />
 
-        <div>
+        <div className="min-w-0 [overflow-wrap:anywhere]">
           <p className="text-sm text-fg-subtle">{product.brand}</p>
           <h1 className="mt-1 font-display text-3xl font-bold text-fg sm:text-4xl">
             {name}

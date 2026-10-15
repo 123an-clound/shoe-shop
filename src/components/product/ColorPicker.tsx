@@ -3,6 +3,7 @@
 import { Check } from "lucide-react";
 import { cn } from "@/lib/cn";
 import type { ProductColor } from "@/types";
+import { navigateOptions } from "@/lib/keyboard";
 
 export function ColorPicker({
   colors,
@@ -20,7 +21,7 @@ export function ColorPicker({
       <p className="text-sm text-fg-muted">
         Màu: <span className="text-fg">{selectedColor?.name ?? "Chọn màu"}</span>
       </p>
-      <div className="mt-3 flex flex-wrap gap-3" role="radiogroup" aria-label="Chọn màu">
+      <div className="mt-3 flex flex-wrap gap-3" role="radiogroup" aria-label="Chọn màu" onKeyDown={navigateOptions}>
         {colors.map((color) => {
           const isSelected = color.hex === selected;
           return (
@@ -29,11 +30,12 @@ export function ColorPicker({
               type="button"
               role="radio"
               aria-checked={isSelected}
+              tabIndex={isSelected || (!selected && color === colors[0]) ? 0 : -1}
               aria-label={color.name}
               title={color.name}
               onClick={() => onSelect(color.hex)}
               className={cn(
-                "relative flex h-9 w-9 items-center justify-center rounded-full border-2 transition-transform",
+                "relative flex h-12 w-12 items-center justify-center rounded-full border-2 transition-transform focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand motion-reduce:transition-none",
                 isSelected ? "scale-110 border-brand" : "border-transparent",
               )}
             >

@@ -47,12 +47,14 @@ export function LoginForm() {
       <Input
         label="Email"
         type="email"
+        autoComplete="username"
         error={errors.email?.message}
         {...register("email")}
       />
       <Input
         label="Mật khẩu"
         type="password"
+        autoComplete="current-password"
         error={errors.password?.message}
         {...register("password")}
       />

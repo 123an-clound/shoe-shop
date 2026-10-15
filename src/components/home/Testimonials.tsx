@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import { Star } from "lucide-react";
 import { Reveal } from "@/components/ui/Reveal";
-import { usePrefersReducedMotion } from "@/lib/hooks/useMediaQuery";
+import { usePointerFine, usePrefersReducedMotion } from "@/lib/hooks/useMediaQuery";
 import { cn } from "@/lib/cn";
 import type { Testimonial } from "@/lib/queries/testimonials";
 import type { Locale } from "@/lib/i18n/messages";
@@ -24,10 +24,11 @@ function initials(name: string) {
 export function Testimonials({ testimonials, locale = "vi" }: { testimonials: Testimonial[]; locale?: Locale }) {
   const title = getMessages(locale).home.testimonials;
   const reducedMotion = usePrefersReducedMotion();
-  const [plugins] = useState(() =>
-    reducedMotion
+  const pointerFine = usePointerFine();
+  const plugins = useMemo(() =>
+    reducedMotion || !pointerFine
       ? []
-      : [Autoplay({ delay: 5000, stopOnMouseEnter: true, stopOnInteraction: false })],
+      : [Autoplay({ delay: 5000, stopOnMouseEnter: true, stopOnInteraction: true })], [pointerFine, reducedMotion],
   );
   const [emblaRef] = useEmblaCarousel({ loop: true, align: "center" }, plugins);
 

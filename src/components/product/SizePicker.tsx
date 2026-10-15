@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/cn";
+import { navigateOptions } from "@/lib/keyboard";
 
 export function SizePicker({
   sizes,
@@ -18,7 +19,7 @@ export function SizePicker({
   labels?: Record<number, string>;
 }) {
   return (
-    <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Chọn size">
+    <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Chọn size" onKeyDown={navigateOptions}>
       {sizes.map((size) => {
         const unavailable = disabled || unavailableSizes.includes(size);
         return (
@@ -27,6 +28,7 @@ export function SizePicker({
           type="button"
           role="radio"
           aria-checked={selected === size}
+          tabIndex={selected === size || (selected === null && size === sizes.find((value) => !unavailableSizes.includes(value))) ? 0 : -1}
           disabled={unavailable}
           aria-label={`Size ${labels[size] ?? size}${unavailable ? " — Hết hàng" : ""}`}
           onClick={() => onSelect(size)}

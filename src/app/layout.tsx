@@ -1,14 +1,19 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Space_Grotesk } from "next/font/google";
 import { Toaster } from "sonner";
 import { getSettings } from "@/lib/queries/settings";
 import { SITE_URL } from "@/lib/seo";
 import "./globals.css";
+import { headers } from "next/headers";
+import { connection } from "next/server";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
   subsets: ["latin"],
 });
+
+export const viewport: Viewport = { width: "device-width", initialScale: 1, viewportFit: "cover" };
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSettings();
@@ -36,7 +41,10 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RootLayout({
   children,
 }: LayoutProps<"/">) {
+  // Per-request CSP nonces must never enter a static/prefetch prerender.
+  await connection();
   const settings = await getSettings();
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
 
   return (
     <html
@@ -47,11 +55,13 @@ export default async function RootLayout({
       <head>
         {/* Tầng màu thương hiệu — đọc từ veloce_settings, ghi đè giá trị dự phòng trong globals.css */}
         <style
+          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: `:root{--brand-primary:${settings.color_primary};--brand-secondary:${settings.color_secondary};--brand-accent:${settings.color_accent};}`,
           }}
         />
         <script
+          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: `try{const t=localStorage.getItem("veloce-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch{}`,
           }}
@@ -59,7 +69,7 @@ export default async function RootLayout({
       </head>
       <body className="min-h-full bg-ink-950 text-fg">
         {children}
-        <Toaster theme="system" richColors position="bottom-right" />
+        <Toaster theme="system" richColors position="bottom-right" offset="max(16px, env(safe-area-inset-bottom))" mobileOffset="calc(var(--purchase-bar-height, 0px) + env(safe-area-inset-bottom) + 16px)" />
       </body>
     </html>
   );

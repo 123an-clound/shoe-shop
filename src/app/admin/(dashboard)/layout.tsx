@@ -36,7 +36,7 @@ export default async function AdminDashboardLayout({
   const [settings, pendingCount] = await Promise.all([getSettings(), getPendingOrderCount()]);
 
   return (
-    <div className="flex min-h-screen flex-col md:flex-row">
+    <div className="flex min-h-screen flex-col lg:flex-row">
       <AdminSidebar storeName={settings.store_name} hasPendingOrders={pendingCount > 0} pendingOrderCount={pendingCount} />
       <main className="min-w-0 flex-1 overflow-x-hidden p-4 sm:p-6 lg:p-8">{children}</main>
     </div>

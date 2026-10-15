@@ -38,8 +38,8 @@ export function ContactForm() {
         <label htmlFor="contact-website">Website</label>
         <input id="contact-website" tabIndex={-1} autoComplete="off" {...register("website")} />
       </div>
-      <Input label={copy.name} error={errors.name?.message} {...register("name")} />
-      <Input label={copy.email} type="email" error={errors.email?.message} {...register("email")} />
+      <Input label={copy.name} autoComplete="name" error={errors.name?.message} {...register("name")} />
+      <Input label={copy.email} type="email" autoComplete="email" error={errors.email?.message} {...register("email")} />
       <div className="flex flex-col gap-1.5">
         <label htmlFor="message" className="text-sm text-fg-muted">{copy.message}</label>
         <textarea id="message" rows={5} className="rounded-lg border border-ink-700 bg-ink-900 px-4 py-3 text-sm text-fg placeholder:text-fg-subtle transition-colors focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30" aria-invalid={!!errors.message} {...register("message")} />

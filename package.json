@@ -8,6 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "tsx --test tests/*.test.ts",
+    "test:db": "node tests/product-inventory-db.mjs && node tests/order-operations-db.mjs && node tests/customer-accounts-db.mjs && node tests/abuse-protection-db.mjs",
+    "test:e2e": "playwright test",
     "gen:images": "tsx scripts/upload-images.mjs"
   },
   "dependencies": {
@@ -31,6 +33,8 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "0.5.10",
+    "@playwright/test": "1.64.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

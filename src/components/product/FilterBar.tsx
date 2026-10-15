@@ -1,7 +1,7 @@
 "use client";
 
 import { Check } from "lucide-react";
-import type { Dispatch, SetStateAction } from "react";
+import { useId, type Dispatch, type SetStateAction } from "react";
 import { cn } from "@/lib/cn";
 import { formatVND } from "@/lib/format";
 import type { Category } from "@/lib/queries/categories";
@@ -26,6 +26,7 @@ export function FilterBar({
   onChange: Dispatch<SetStateAction<Filters>>;
   locale?: Locale;
 }) {
+  const categoryGroup = useId();
   function toggleSize(size: number) {
     onChange((f) => ({
       ...f,
@@ -48,7 +49,7 @@ export function FilterBar({
           <label className="flex items-center gap-2 text-sm text-fg-muted">
             <input
               type="radio"
-              name="category"
+              name={categoryGroup}
               checked={filters.category === null}
               onChange={() => onChange((f) => ({ ...f, category: null }))}
               className="accent-brand"
@@ -62,7 +63,7 @@ export function FilterBar({
             >
               <input
                 type="radio"
-                name="category"
+                name={categoryGroup}
                 checked={filters.category === category.id}
                 onChange={() => onChange((f) => ({ ...f, category: category.id }))}
                 className="accent-brand"
@@ -78,6 +79,7 @@ export function FilterBar({
         <div className="mt-3 flex flex-col gap-2">
           <input
             type="range"
+            aria-label={locale === "en" ? "Minimum price" : "Giá tối thiểu"}
             min={priceBounds[0]}
             max={priceBounds[1]}
             value={filters.priceRange[0]}
@@ -85,10 +87,11 @@ export function FilterBar({
               const value = Math.min(Number(e.target.value), filters.priceRange[1]);
               onChange((f) => ({ ...f, priceRange: [value, f.priceRange[1]] }));
             }}
-            className="w-full accent-brand"
+            className="min-h-11 w-full accent-brand"
           />
           <input
             type="range"
+            aria-label={locale === "en" ? "Maximum price" : "Giá tối đa"}
             min={priceBounds[0]}
             max={priceBounds[1]}
             value={filters.priceRange[1]}
@@ -96,7 +99,7 @@ export function FilterBar({
               const value = Math.max(Number(e.target.value), filters.priceRange[0]);
               onChange((f) => ({ ...f, priceRange: [f.priceRange[0], value] }));
             }}
-            className="w-full accent-brand"
+            className="min-h-11 w-full accent-brand"
           />
           <p className="tabular-nums text-xs text-fg-subtle">
             {formatVND(filters.priceRange[0])} — {formatVND(filters.priceRange[1])}
@@ -114,7 +117,7 @@ export function FilterBar({
               onClick={() => toggleSize(size)}
               aria-pressed={filters.sizes.includes(size)}
               className={cn(
-                "flex h-10 w-10 items-center justify-center rounded-lg border text-sm tabular-nums transition-colors",
+                "flex h-12 w-12 items-center justify-center rounded-lg border text-sm tabular-nums focus-visible:outline-2 focus-visible:outline-brand",
                 filters.sizes.includes(size)
                   ? "border-brand bg-brand/15 text-brand"
                   : "border-ink-700 text-fg-muted hover:text-fg",
@@ -140,7 +143,7 @@ export function FilterBar({
                 aria-label={color.name}
                 title={color.name}
                 className={cn(
-                  "relative flex h-8 w-8 items-center justify-center rounded-full border-2 transition-transform",
+                  "relative flex h-12 w-12 items-center justify-center rounded-full border-2 focus-visible:outline-2 focus-visible:outline-brand",
                   selected ? "scale-110 border-brand" : "border-transparent",
                 )}
               >

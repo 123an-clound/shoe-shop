@@ -8,6 +8,7 @@ import { customerCopy } from "@/lib/customer/copy";
 import { getCustomerProviders } from "@/lib/customer/providers";
 import { claimReceipts, clearReceipts } from "@/lib/customer/receipts";
 import type { Locale } from "@/lib/i18n/messages";
+import { checkAuthRate } from "@/lib/auth/rateLimit";
 
 type Result = { success: true; url?: string; claimFailed?: boolean } | { success: false; error: string };
 function localeOf(value: unknown): Locale { return value === "en" ? "en" : "vi"; }
@@ -29,6 +30,8 @@ export async function sendCustomerOtp(emailInput: string, language: Locale): Pro
   try {
     if (!(await getCustomerProviders()).email) return { success: false, error: copy.providerUnavailable };
     const supabase = await createClient();
+    const rate = await checkAuthRate(supabase, "otp-send", email);
+    if (rate !== "allowed") return { success: false, error: rate === "limited" ? copy.rateLimit : copy.authError };
     const { error } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
     return error ? { success: false, error: errorText(error.code, locale) } : { success: true };
   } catch { return { success: false, error: copy.authError }; }
@@ -40,6 +43,8 @@ export async function verifyCustomerOtp(emailInput: string, token: string, langu
   if (typeof token !== "string" || !isOtpCode(token)) return { success: false, error: copy.invalidOtp };
   try {
     const supabase = await createClient();
+    const rate = await checkAuthRate(supabase, "otp-verify", email);
+    if (rate !== "allowed") return { success: false, error: rate === "limited" ? copy.rateLimit : copy.authError };
     const { data, error } = await supabase.auth.verifyOtp({ email, token, type: "email" });
     if (error || !data.user) return { success: false, error: errorText(error?.code, locale) };
     const claimed = await claimReceipts().catch(() => false);

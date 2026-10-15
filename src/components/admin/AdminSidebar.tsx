@@ -50,14 +50,14 @@ export function AdminSidebar({
   }
 
   return (
-    <aside className="sticky top-0 z-40 flex w-full shrink-0 flex-col border-b border-ink-700 bg-ink-900 p-3 md:h-screen md:w-64 md:border-b-0 md:border-r md:p-4">
-      <div className="flex items-center justify-between px-2 py-2 md:block md:py-3">
-        <div><p className="font-display text-base font-bold text-fg md:text-lg">{storeName}</p><p className="text-xs text-fg-subtle">Quản trị</p></div>
-        <button type="button" onClick={handleLogout} className="flex h-11 items-center gap-2 rounded-lg px-3 text-xs text-fg-muted hover:bg-ink-800 hover:text-fg md:hidden"><LogOut className="h-4 w-4" aria-hidden="true" />Đăng xuất</button>
+    <aside className="sticky top-0 z-40 flex w-full shrink-0 flex-col border-b border-ink-700 bg-ink-900 p-3 lg:h-screen lg:w-64 lg:border-b-0 lg:border-r lg:p-4">
+      <div className="flex items-center justify-between px-2 py-2 lg:block lg:py-3">
+        <div><p className="font-display text-base font-bold text-fg lg:text-lg">{storeName}</p><p className="text-xs text-fg-subtle">Quản trị</p></div>
+        <button type="button" onClick={handleLogout} className="flex h-11 items-center gap-2 rounded-lg px-3 text-xs text-fg-muted hover:bg-ink-800 hover:text-fg lg:hidden"><LogOut className="h-4 w-4" aria-hidden="true" />Đăng xuất</button>
       </div>
       <div className="px-2 py-2"><AdminThemeToggle /></div>
 
-      <nav aria-label="Điều hướng quản trị" className="mt-2 flex gap-1 overflow-x-auto pb-1 md:mt-4 md:flex-1 md:flex-col md:gap-1 md:overflow-visible md:pb-0">
+      <nav aria-label="Điều hướng quản trị" className="mt-2 flex gap-1 overflow-x-auto pb-1 lg:mt-4 lg:flex-1 lg:flex-col lg:gap-1 lg:overflow-visible lg:pb-0">
         {NAV_ITEMS.map((item) => {
           const active = item.href === "/admin"
             ? pathname === "/admin"
@@ -69,7 +69,7 @@ export function AdminSidebar({
               href={item.href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "relative flex shrink-0 items-center gap-2 rounded-lg px-3 py-2.5 text-xs transition-colors sm:text-sm md:gap-3",
+                "relative flex shrink-0 items-center gap-2 rounded-lg px-3 py-2.5 text-xs transition-colors sm:text-sm lg:gap-3",
                 active
                   ? "bg-brand/15 text-brand"
                   : "text-fg-muted hover:bg-ink-800 hover:text-fg",
@@ -88,7 +88,7 @@ export function AdminSidebar({
       <button
         type="button"
         onClick={handleLogout}
-        className="hidden min-h-11 items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-fg-muted hover:bg-ink-800 hover:text-fg md:flex"
+        className="hidden min-h-11 items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-fg-muted hover:bg-ink-800 hover:text-fg lg:flex"
       >
         <LogOut className="h-4 w-4" aria-hidden="true" />
         Đăng xuất

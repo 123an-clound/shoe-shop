@@ -4,11 +4,11 @@ import { Star } from "lucide-react";
 import { ProductBadge } from "@/components/product/ProductBadge";
 import { TiltCard } from "@/components/ui/TiltCard";
 import { formatVND } from "@/lib/format";
-import type { Product } from "@/lib/queries/products";
+import type { ProductSummary } from "@/lib/queries/products";
 import type { Locale } from "@/lib/i18n/messages";
 import { getMessages, localizedHref } from "@/lib/i18n/messages";
 
-export function ProductCard({ product, locale = "vi" }: { product: Product; locale?: Locale }) {
+export function ProductCard({ product, locale = "vi" }: { product: ProductSummary; locale?: Locale }) {
   const copy = getMessages(locale).product;
   const name = locale === "en" ? product.name_en || product.name : product.name;
   const [primaryImage, secondaryImage] = product.images;
@@ -21,9 +21,10 @@ export function ProductCard({ product, locale = "vi" }: { product: Product; loca
   return (
     <Link
       href={localizedHref(`/san-pham/${product.slug}`, locale)}
-      className="group block rounded-[var(--radius-card)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950"
+      prefetch={false}
+      className="group block h-full rounded-[var(--radius-card)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950"
     >
-      <TiltCard className="glass overflow-hidden rounded-[var(--radius-card)]">
+      <TiltCard className="glass flex h-full flex-col overflow-hidden rounded-[var(--radius-card)]">
         <div className="relative aspect-[4/5] w-full overflow-hidden bg-ink-800">
           {primaryImage ? (
             <>
@@ -70,9 +71,9 @@ export function ProductCard({ product, locale = "vi" }: { product: Product; loca
           )}
         </div>
 
-        <div className="flex flex-col gap-1 p-4">
+        <div className="flex flex-1 flex-col gap-1 p-3 sm:p-4">
           <p className="text-xs text-fg-subtle">{product.brand}</p>
-          <h3 className="font-display text-base font-medium text-fg">{name}</h3>
+          <h3 className="line-clamp-3 font-display text-base font-medium text-fg [overflow-wrap:anywhere]">{name}</h3>
 
           <div className="mt-1 flex items-center gap-1 text-xs text-fg-muted">
             <Star
@@ -83,7 +84,7 @@ export function ProductCard({ product, locale = "vi" }: { product: Product; loca
             <span>({product.review_count})</span>
           </div>
 
-          <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+          <div className="mt-auto flex flex-wrap items-baseline gap-x-2 gap-y-0.5 pt-3">
             <span className="tabular-nums font-medium text-fg">
               {formatVND(product.price)}
             </span>

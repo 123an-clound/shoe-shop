@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowUpRight, Briefcase, Diamond, Footprints, Mountain, Zap } from "lucide-react";
 import { Reveal } from "@/components/ui/Reveal";
 import type { Category } from "@/lib/queries/categories";
-import type { Product } from "@/lib/queries/products";
+import type { ProductSummary } from "@/lib/queries/products";
 import type { Locale } from "@/lib/i18n/messages";
 import { getMessages, localizedHref } from "@/lib/i18n/messages";
 
@@ -17,7 +17,7 @@ const CATEGORY_ICON: Record<string, typeof Footprints> = {
 
 export function CategoryShowcase({ categories, products, locale }: {
   categories: Category[];
-  products: Product[];
+  products: ProductSummary[];
   locale: Locale;
 }) {
   const copy = getMessages(locale);

@@ -111,6 +111,7 @@ export function ScrollStory({
                     src={images[i]!.url!}
                     alt={images[i]!.alt}
                     fill
+                    sizes="(min-width: 768px) 440px, calc(100vw - 32px)"
                     className="object-cover"
                   />
                 )}
@@ -139,7 +140,7 @@ export function ScrollStory({
                 className="story-image absolute inset-0 overflow-hidden rounded-[var(--radius-card)] bg-ink-800"
               >
                 {img.url && (
-                  <Image src={img.url} alt={img.alt} fill className="object-cover" />
+                  <Image src={img.url} alt={img.alt} fill sizes="(min-width: 1280px) 520px, 45vw" className="object-cover" />
                 )}
               </div>
             ))}

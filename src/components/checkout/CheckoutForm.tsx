@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type FormEvent, type MouseEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type MouseEvent } from "react";
 import { useRouter } from "next/navigation";
 import { LocaleLink } from "@/components/i18n/LocaleLink";
 import { useForm } from "react-hook-form";
@@ -35,6 +35,12 @@ export function CheckoutForm({ customerUserId, sessionUnavailable = false }: { c
   const fallbackIdempotencyKey = useRef<string | null>(null);
   const fallbackReceiptToken = useRef<string | null>(null);
   const steps = [...copy.steps];
+  const stepTitle = useRef<HTMLHeadingElement>(null);
+  const previousStep = useRef(step);
+  useEffect(() => {
+    if (previousStep.current !== step) stepTitle.current?.focus();
+    previousStep.current = step;
+  }, [step]);
 
   const {
     register,
@@ -57,7 +63,7 @@ export function CheckoutForm({ customerUserId, sessionUnavailable = false }: { c
 
   async function goNext(event: MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
-    const valid = await trigger(STEP_FIELDS[step]);
+    const valid = await trigger(STEP_FIELDS[step], { shouldFocus: true });
     if (valid) setStep((s) => Math.min(steps.length - 1, s + 1));
   }
 
@@ -150,22 +156,29 @@ export function CheckoutForm({ customerUserId, sessionUnavailable = false }: { c
   return (
     <form onSubmit={onFormSubmit} noValidate className="mx-auto max-w-xl">
       <CheckoutSteps steps={steps} current={step} />
+      <h2 ref={stepTitle} tabIndex={-1} className="mb-5 text-lg font-semibold text-fg focus-visible:outline-2 focus-visible:outline-brand">{steps[step]}</h2>
 
       {step === 0 && (
         <div className="flex flex-col gap-4">
           <Input
             label={copy.name}
+            autoComplete="name"
             error={errors.customerName?.message}
             {...register("customerName")}
           />
           <Input
             label={copy.phone}
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
             error={errors.customerPhone?.message}
             {...register("customerPhone")}
           />
           <Input
             label={copy.email}
             type="email"
+            inputMode="email"
+            autoComplete="email"
             error={errors.customerEmail?.message}
             {...register("customerEmail")}
           />
@@ -176,6 +189,7 @@ export function CheckoutForm({ customerUserId, sessionUnavailable = false }: { c
         <div className="flex flex-col gap-4">
           <Input
             label={copy.address}
+            autoComplete="street-address"
             error={errors.address?.message}
             {...register("address")}
           />

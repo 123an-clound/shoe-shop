@@ -1,8 +1,7 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
 import { ProductCard } from "@/components/product/ProductCard";
-import type { Product } from "@/lib/queries/products";
+import type { ProductSummary } from "@/lib/queries/products";
 import type { Locale } from "@/lib/i18n/messages";
 
 export function ProductResultsGrid({
@@ -10,7 +9,7 @@ export function ProductResultsGrid({
   onResetFilters,
   locale = "vi",
 }: {
-  products: Product[];
+  products: ProductSummary[];
   onResetFilters: () => void;
   locale?: Locale;
 }) {
@@ -30,21 +29,15 @@ export function ProductResultsGrid({
   }
 
   return (
-    <motion.div layout className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3">
-      <AnimatePresence>
+    <div className="grid grid-cols-2 items-stretch gap-4 sm:gap-6 md:grid-cols-3">
         {products.map((product) => (
-          <motion.div
+          <div
             key={product.id}
-            layout
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="min-w-0"
           >
             <ProductCard product={product} locale={locale} />
-          </motion.div>
+          </div>
         ))}
-      </AnimatePresence>
-    </motion.div>
+    </div>
   );
 }

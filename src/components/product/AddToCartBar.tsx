@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Minus, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/Button";
@@ -25,6 +25,15 @@ export function AddToCartBar({
 }) {
   const [quantity, setQuantity] = useState(1);
   const buttonWrapperRef = useRef<HTMLDivElement>(null);
+  const barRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!barRef.current) return;
+    const observer = new ResizeObserver(([entry]) => {
+      document.documentElement.style.setProperty("--purchase-bar-height", `${entry.target.getBoundingClientRect().height}px`);
+    });
+    observer.observe(barRef.current);
+    return () => { observer.disconnect(); document.documentElement.style.removeProperty("--purchase-bar-height"); };
+  }, []);
   const addItem = useCartStore((state) => state.addItem);
   const reducedMotion = usePrefersReducedMotion();
   const { locale, messages } = useLocaleContext();
@@ -74,7 +83,7 @@ export function AddToCartBar({
   }
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-ink-700 bg-ink-950/95 p-4 backdrop-blur lg:static lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
+    <div ref={barRef} className="purchase-bar fixed inset-x-0 bottom-0 z-40 border-t border-ink-700 bg-ink-950 p-4 lg:static lg:border-0 lg:bg-transparent lg:p-0">
       <div className="mx-auto flex max-w-7xl items-center gap-4 lg:mx-0 lg:max-w-none">
         <div className="flex items-center rounded-lg border border-ink-700">
           <button
@@ -104,11 +113,11 @@ export function AddToCartBar({
             size="lg"
             disabled={outOfStock || (selectedSize !== null && maxQuantity <= 0)}
             onClick={handleAddToCart}
-            className="w-full"
+            className="h-auto min-h-14 w-full flex-col gap-0.5 px-3 py-2 text-sm sm:text-base"
           >
             {outOfStock
               ? messages.product.soldOut
-              : `${messages.product.addToCart} — ${formatVND(product.price * chosenQuantity)}`}
+              : <><span>{messages.product.addToCart}</span><span className="tabular-nums">{formatVND(product.price * chosenQuantity)}</span></>}
           </Button>
         </div>
       </div>

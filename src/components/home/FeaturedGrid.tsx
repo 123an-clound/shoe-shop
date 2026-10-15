@@ -2,11 +2,11 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Reveal } from "@/components/ui/Reveal";
 import { ProductGrid } from "@/components/product/ProductGrid";
-import type { Product } from "@/lib/queries/products";
+import type { ProductSummary } from "@/lib/queries/products";
 import type { Locale } from "@/lib/i18n/messages";
 import { getMessages, localizedHref } from "@/lib/i18n/messages";
 
-export function FeaturedGrid({ products, locale }: { products: Product[]; locale: Locale }) {
+export function FeaturedGrid({ products, locale }: { products: ProductSummary[]; locale: Locale }) {
   const featured = products.slice(0, 8);
   const copy = getMessages(locale);
 

@@ -12,7 +12,7 @@
   --surface-700: #1f1a35;
   --text-primary: #f4f2ff;
   --text-muted: #a5a0c0;
-  --text-subtle: #6b6690;
+  --text-subtle: #a5a0c0;
 
   --product-badge-new-bg: #a3e635;
   --product-badge-new-fg: #1a2e05;
@@ -32,6 +32,37 @@
   --shadow-glow: 0 0 40px -8px
     color-mix(in oklab, var(--brand-primary) 55%, transparent);
 }
+
+.shop-dialog { position: fixed; inset: 0; width: 100%; max-width: none; height: 100dvh; max-height: none; margin: 0; padding: 0; border: 0; overflow: hidden; background: transparent; color: var(--text-primary); }
+.shop-dialog::backdrop { background: rgb(7 6 13 / 78%); }
+.shop-dialog-panel { padding-bottom: max(1.25rem, env(safe-area-inset-bottom)); padding-top: max(1.25rem, env(safe-area-inset-top)); }
+.shop-dialog[open] .shop-dialog-panel { animation: drawer-right 180ms cubic-bezier(.22,1,.36,1); }
+.shop-dialog[open] .shop-dialog-panel[data-side="bottom"] { animation-name: drawer-bottom; }
+@keyframes drawer-right { from { transform: translateX(100%); opacity: .5; } to { transform: translateX(0); opacity: 1; } }
+@keyframes drawer-bottom { from { transform: translateY(100%); opacity: .5; } to { transform: translateY(0); opacity: 1; } }
+.product-detail { padding-bottom: calc(var(--purchase-bar-height, 96px) + 2rem); }
+.purchase-bar { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+.storefront-header { padding-top: env(safe-area-inset-top); }
+.storefront-main { padding-top: calc(4rem + env(safe-area-inset-top)); }
+.purchase-bar { padding-left: max(1rem, env(safe-area-inset-left)); padding-right: max(1rem, env(safe-area-inset-right)); }
+.skip-link { position: fixed; top: -10rem; left: 1rem; z-index: 110; padding: .75rem 1rem; border-radius: .5rem; background: var(--surface-900); color: var(--text-primary); }
+.skip-link:focus { top: max(1rem, env(safe-area-inset-top)); outline: 2px solid var(--brand-primary); }
+@media (min-width: 1024px) { .product-detail { padding-bottom: 2.5rem; } .purchase-bar { padding-bottom: 0; } }
+@media (prefers-reduced-motion: reduce) { .shop-dialog[open] .shop-dialog-panel { animation: none; } }
+@media (pointer: coarse) { input, textarea, select { font-size: 16px !important; } }
+.reveal-enter { animation: reveal-enter 300ms cubic-bezier(.22,1,.36,1) var(--reveal-delay, 0s) backwards; }
+@keyframes reveal-enter { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .tilt-card { transition: transform 160ms ease-out; }
+  .tilt-card:hover { transform: perspective(1000px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)); }
+}
+@media (max-width: 1180px), (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .aurora-background { background: radial-gradient(ellipse at 75% 0%, color-mix(in srgb, var(--brand-primary) 15%, transparent), transparent 55%); }
+  .aurora-background > div { display: none; }
+  .glass { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+  .noise::after { display: none !important; }
+}
+@media (prefers-reduced-motion: reduce) { .reveal-enter { animation: none; } }
 
 /* Chỉ in phiếu đóng gói; ghi chú nội bộ và điều hướng quản trị không lên giấy. */
 @media print {

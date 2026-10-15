@@ -3,19 +3,21 @@ import { supabasePublic } from "@/lib/supabase/public";
 import type { Tables } from "@/types/database";
 
 export type Product = Tables<"veloce_products">;
+const summaryColumns = "id,slug,name,name_en,brand,category_id,price,original_price,images,badge,rating,review_count,stock,sizes,colors,is_published,sort_order,created_at,updated_at" as const;
+export type ProductSummary = Pick<Product, "id" | "slug" | "name" | "name_en" | "brand" | "category_id" | "price" | "original_price" | "images" | "badge" | "rating" | "review_count" | "stock" | "sizes" | "colors" | "is_published" | "sort_order" | "created_at" | "updated_at">;
 
 export const getProducts = unstable_cache(
-  async (): Promise<Product[]> => {
+  async (): Promise<ProductSummary[]> => {
     const { data, error } = await supabasePublic
       .from("veloce_products")
-      .select("*")
+      .select(summaryColumns)
       .eq("is_published", true)
       .order("sort_order");
 
     if (error) throw new Error("Không đọc được danh sách sản phẩm.");
     return data;
   },
-  ["veloce-products-v2", process.env.NEXT_PUBLIC_SUPABASE_URL!],
+  ["veloce-products-summary-v3", process.env.NEXT_PUBLIC_SUPABASE_URL!],
   { tags: ["products"] },
 );
 
@@ -36,10 +38,10 @@ export const getProductBySlug = unstable_cache(
 );
 
 export const getRelatedProducts = unstable_cache(
-  async (categoryId: string, excludeSlug: string, limit = 4): Promise<Product[]> => {
+  async (categoryId: string, excludeSlug: string, limit = 4): Promise<ProductSummary[]> => {
     const { data, error } = await supabasePublic
       .from("veloce_products")
-      .select("*")
+      .select(summaryColumns)
       .eq("is_published", true)
       .eq("category_id", categoryId)
       .neq("slug", excludeSlug)
@@ -49,6 +51,6 @@ export const getRelatedProducts = unstable_cache(
     if (error) throw new Error("Không đọc được sản phẩm liên quan.");
     return data;
   },
-  ["veloce-related-products-v2", process.env.NEXT_PUBLIC_SUPABASE_URL!],
+  ["veloce-related-products-summary-v3", process.env.NEXT_PUBLIC_SUPABASE_URL!],
   { tags: ["products"] },
 );
