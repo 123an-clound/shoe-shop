@@ -181,6 +181,7 @@ async function main() {
     NEXT_PUBLIC_SUPABASE_ANON_KEY: key,
     VELOCE_ADMIN_EMAIL: email,
     VELOCE_ADMIN_PASSWORD: password,
+    VELOCE_SECURITY_KEY: process.env.VELOCE_SECURITY_KEY,
   })
     .filter(([, v]) => !v)
     .map(([k]) => k);
@@ -189,7 +190,7 @@ async function main() {
     process.exit(1);
   }
 
-  const sb = createClient(url, key);
+  const sb = createClient(url, key, { global: { headers: { "x-veloce-server-token": process.env.VELOCE_SECURITY_KEY } } });
   const { error: authErr } = await sb.auth.signInWithPassword({ email, password });
   if (authErr) {
     console.error(`Đăng nhập thất bại: ${authErr.message}`);

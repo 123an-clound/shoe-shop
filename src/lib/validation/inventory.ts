@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { ProductColor } from "@/types";
+import { PublicError } from "@/lib/security/errors";
 
 export const productInventorySchema = z.object({
   colors: z.array(z.object({
@@ -34,15 +35,15 @@ export function toInventoryInput(colors: ProductColor[]) {
 /** Chỉ thay số lượng; tên màu, ảnh và danh sách biến thể luôn lấy từ server. */
 export function prepareProductInventory(input: unknown, colors: ProductColor[], sizes: number[]): ProductColor[] {
   const parsed = productInventorySchema.safeParse(input);
-  if (!parsed.success) throw new Error(parsed.error.issues[0]?.message ?? "Tồn kho không hợp lệ.");
+  if (!parsed.success) throw new PublicError(parsed.error.issues[0]?.message ?? "Tồn kho không hợp lệ.");
   if (!sizes.length || parsed.data.colors.length !== colors.length ||
       new Set(colors.map((color) => color.hex.toLowerCase())).size !== colors.length) {
-    throw new Error("Màu hoặc size đã thay đổi. Tải lại trang trước khi lưu tồn kho.");
+    throw new PublicError("Màu hoặc size đã thay đổi. Tải lại trang trước khi lưu tồn kho.");
   }
   return colors.map((color) => {
     const submitted = parsed.data.colors.find((entry) => entry.hex.toLowerCase() === color.hex.toLowerCase());
     if (!submitted || submitted.inventory.length !== sizes.length || submitted.inventory.some((entry) => !sizes.includes(entry.size))) {
-      throw new Error("Nhập tồn kho cho đầy đủ size và màu hiện có của sản phẩm.");
+      throw new PublicError("Nhập tồn kho cho đầy đủ size và màu hiện có của sản phẩm.");
     }
     return { ...color, inventory: sizes.map((size) => ({ size, quantity: submitted.inventory.find((entry) => entry.size === size)!.quantity })) };
   });

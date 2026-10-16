@@ -11,7 +11,8 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error(error);
+    // Không phản chiếu exception/payload vào console trình duyệt.
+    console.error("Application error", error.digest ? { digest: error.digest } : undefined);
   }, [error]);
 
   return (

@@ -1,4 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
+import { PublicError, safeErrorMessage } from "@/lib/security/errors";
+import { securityEvent } from "@/lib/security/events";
 
 /**
  * Kiểm tra quyền admin ngay trong Server Action, không dựa hoàn toàn vào RLS
@@ -13,7 +15,8 @@ export async function requireAdmin() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    throw new Error("Chưa đăng nhập.");
+    securityEvent("access_denied", "NO_SESSION");
+    throw new PublicError("Chưa đăng nhập.");
   }
 
   const { data: admin } = await supabase
@@ -23,12 +26,13 @@ export async function requireAdmin() {
     .maybeSingle();
 
   if (!admin) {
-    throw new Error("Tài khoản không có quyền quản trị.");
+    securityEvent("access_denied", "NOT_ADMIN");
+    throw new PublicError("Tài khoản không có quyền quản trị.");
   }
 
   return { supabase, user };
 }
 
 export function actionErrorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : "Có lỗi xảy ra, vui lòng thử lại.";
+  return safeErrorMessage(error);
 }

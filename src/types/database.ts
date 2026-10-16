@@ -1184,6 +1184,17 @@ export type Database = {
       }
     }
     Functions: {
+      veloce_touch_session: { Args: never; Returns: boolean }
+      veloce_check_auth_rate_trusted: {
+        Args: {
+          p_action: string
+          p_identity: string
+          p_server_token: string
+          p_source: string
+        }
+        Returns: undefined
+      }
+      veloce_session_valid: { Args: never; Returns: boolean }
       veloce_customer_orders_by_status: {
         Args: { p_page?: number; p_scope?: string }
         Returns: Json

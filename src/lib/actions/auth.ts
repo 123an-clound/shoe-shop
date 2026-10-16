@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { z } from "zod";
 import { checkAuthRate } from "@/lib/auth/rateLimit";
+import { securityEvent } from "@/lib/security/events";
 
 export type SignInResult = { success: true } | { success: false; error: string };
 const credentialsSchema = z.object({
@@ -25,6 +26,7 @@ export async function signInAdmin(email: string, password: string): Promise<Sign
 
     const { data, error } = await supabase.auth.signInWithPassword(credentials.data);
     if (error || !data.user) {
+      securityEvent("auth_failure", "ADMIN_CREDENTIALS");
       return { success: false, error: "Email hoặc mật khẩu không đúng." };
     }
 
@@ -44,6 +46,7 @@ export async function signInAdmin(email: string, password: string): Promise<Sign
       return { success: false, error: "Tài khoản không có quyền quản trị." };
     }
 
+    securityEvent("auth_success", "ADMIN_LOGIN");
     return { success: true };
   } catch {
     return { success: false, error: "Không kết nối được với hệ thống đăng nhập. Hãy thử lại." };

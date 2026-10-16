@@ -1,5 +1,7 @@
 "use server";
 
+import { PublicError, databaseError } from "@/lib/security/errors";
+
 import { updateTag } from "next/cache";
 import { requireAdmin, actionErrorMessage } from "@/lib/auth/requireAdmin";
 import { testimonialFormSchema } from "@/lib/validation/testimonial";
@@ -9,7 +11,7 @@ import { z } from "zod";
 function parse(input: unknown) {
   const parsed = testimonialFormSchema.safeParse(input);
   if (!parsed.success) {
-    throw new Error(parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ.");
+    throw new PublicError(parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ.");
   }
   return parsed.data;
 }
@@ -28,7 +30,7 @@ export async function createTestimonial(input: unknown): Promise<ActionResult> {
       rating: data.rating,
       is_published: data.isPublished,
     });
-    if (error) throw new Error(error.message);
+    if (error) throw databaseError(error);
 
     updateTag("testimonials");
     return { success: true };
@@ -40,7 +42,7 @@ export async function createTestimonial(input: unknown): Promise<ActionResult> {
 export async function updateTestimonial(id: string, expectedUpdatedAt: string, input: unknown): Promise<ActionResult> {
   try {
     const { supabase } = await requireAdmin();
-    if (!z.string().uuid().safeParse(id).success || !z.string().datetime({ offset: true }).safeParse(expectedUpdatedAt).success) throw new Error("Phiên bản đánh giá không hợp lệ. Hãy tải lại trang.");
+    if (!z.string().uuid().safeParse(id).success || !z.string().datetime({ offset: true }).safeParse(expectedUpdatedAt).success) throw new PublicError("Phiên bản đánh giá không hợp lệ. Hãy tải lại trang.");
     const data = parse(input);
 
     const { data: updated, error } = await supabase
@@ -58,8 +60,8 @@ export async function updateTestimonial(id: string, expectedUpdatedAt: string, i
       .eq("updated_at", expectedUpdatedAt)
       .select("id")
       .maybeSingle();
-    if (error) throw new Error(error.message);
-    if (!updated) throw new Error("Đánh giá vừa được thay đổi hoặc đã bị xóa. Tải lại để so sánh trước khi lưu.");
+    if (error) throw databaseError(error);
+    if (!updated) throw new PublicError("Đánh giá vừa được thay đổi hoặc đã bị xóa. Tải lại để so sánh trước khi lưu.");
 
     updateTag("testimonials");
     return { success: true };
@@ -71,10 +73,10 @@ export async function updateTestimonial(id: string, expectedUpdatedAt: string, i
 export async function deleteTestimonial(id: string, expectedUpdatedAt: string): Promise<ActionResult> {
   try {
     const { supabase } = await requireAdmin();
-    if (!z.string().uuid().safeParse(id).success || !z.string().datetime({ offset: true }).safeParse(expectedUpdatedAt).success) throw new Error("Phiên bản đánh giá không hợp lệ. Hãy tải lại trang.");
+    if (!z.string().uuid().safeParse(id).success || !z.string().datetime({ offset: true }).safeParse(expectedUpdatedAt).success) throw new PublicError("Phiên bản đánh giá không hợp lệ. Hãy tải lại trang.");
     const { data, error } = await supabase.from("veloce_testimonials").delete().eq("id", id).eq("updated_at", expectedUpdatedAt).select("id").maybeSingle();
-    if (error) throw new Error(error.message);
-    if (!data) throw new Error("Đánh giá vừa được thay đổi hoặc đã bị xóa. Tải lại trang trước khi xóa.");
+    if (error) throw databaseError(error);
+    if (!data) throw new PublicError("Đánh giá vừa được thay đổi hoặc đã bị xóa. Tải lại trang trước khi xóa.");
 
     updateTag("testimonials");
     return { success: true };

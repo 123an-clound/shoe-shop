@@ -15,7 +15,8 @@ export async function proxy(request: NextRequest) {
   requestHeaders.set("x-nonce", nonce);
   if (process.env.NODE_ENV === "production") requestHeaders.set("Content-Security-Policy", policy);
   function secure(response: NextResponse) {
-    if (process.env.NODE_ENV === "production") response.headers.set("Content-Security-Policy-Report-Only", policy);
+    if (process.env.NODE_ENV === "production") response.headers.set("Content-Security-Policy", policy);
+    if (pathname.startsWith("/api/auth/")) response.headers.set("Referrer-Policy", "no-referrer");
     return response;
   }
   requestHeaders.set("x-velo-locale", locale);
@@ -33,11 +34,7 @@ export async function proxy(request: NextRequest) {
   const isAdminOrApi = pathname.startsWith("/admin") || pathname.startsWith("/api");
   if (hasLocale || isAdminOrApi || rootFile) return secure(response);
 
-  const destination = request.nextUrl.clone();
-  destination.pathname = `/vi${pathname === "/" ? "" : pathname}`;
-  const rewrite = NextResponse.rewrite(destination, { request: { headers: requestHeaders } });
-  for (const cookie of response.cookies.getAll()) rewrite.cookies.set(cookie);
-  return secure(rewrite);
+  return secure(response);
 }
 
 export const config = {

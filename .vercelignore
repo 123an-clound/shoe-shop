@@ -1,0 +1,8 @@
+.cache/
+.env*
+!.env.example
+artifacts/
+test-results/
+playwright-report/
+docs/
+_seed/

@@ -6,9 +6,9 @@ export const AVAILABLE_SIZES = [39, 40, 41, 42, 43, 44, 45] as const;
 export const MAX_PRODUCT_IMAGES = 20;
 
 export const productColorSchema = z.object({
-  name: z.string().min(1, "Nhập tên màu"),
+  name: z.string().max(200, "Tối đa 200 ký tự").min(1, "Nhập tên màu"),
   hex: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Mã màu không hợp lệ"),
-  image: z.string().url("Ảnh đại diện không hợp lệ").nullable().optional(),
+  image: z.string().max(2048).url("Ảnh đại diện không hợp lệ").nullable().optional(),
   inventory: z.array(z.object({
     size: z.number().int().min(1).max(60),
     quantity: z.number().int().min(0, "Số lượng phải là số nguyên từ 0 trở lên").max(2147483647),
@@ -16,8 +16,8 @@ export const productColorSchema = z.object({
 });
 
 export const productFormSchema = z.object({
-  name: z.string().min(2, "Nhập tên sản phẩm"),
-  nameEn: z.string().optional(),
+  name: z.string().max(200, "Tối đa 200 ký tự").min(2, "Nhập tên sản phẩm"),
+  nameEn: z.string().max(2000, "Tối đa 2.000 ký tự").optional(),
   slug: z
     .string()
     .min(2, "Slug không hợp lệ")
@@ -26,9 +26,9 @@ export const productFormSchema = z.object({
   price: z.number().int().min(1000, "Giá không hợp lệ"),
   originalPrice: z.number().int().min(1000, "Giá gốc không hợp lệ").nullable(),
   description: z.string().min(10, "Mô tả cần ít nhất 10 ký tự"),
-  descriptionEn: z.string().optional(),
-  features: z.array(z.string().min(1)),
-  featuresEn: z.array(z.string()),
+  descriptionEn: z.string().max(2000, "Tối đa 2.000 ký tự").optional(),
+  features: z.array(z.string().min(1).max(1000)).max(30),
+  featuresEn: z.array(z.string().max(1000)).max(30),
   sizes: z.array(z.number().int().min(1).max(60)).min(1, "Chọn ít nhất 1 size").max(60),
   sizeGuide: sizeGuideSchema,
   colors: z.array(productColorSchema).min(1, "Thêm ít nhất 1 màu").max(30),
@@ -36,7 +36,7 @@ export const productFormSchema = z.object({
   stock: z.number().int().min(0, "Tồn kho không hợp lệ"),
   isPublished: z.boolean(),
   images: z.array(z.string()).max(MAX_PRODUCT_IMAGES, `Tối đa ${MAX_PRODUCT_IMAGES} ảnh`),
-  videoUrl: z.string().url("Video không hợp lệ").nullable(),
+  videoUrl: z.string().max(2048).url("Video không hợp lệ").nullable(),
 }).superRefine((data, ctx) => {
   const issue = (path: (string | number)[], message: string) => ctx.addIssue({ code: "custom", path, message });
   if (new Set(data.sizes).size !== data.sizes.length) issue(["sizes"], "Size không được trùng nhau");

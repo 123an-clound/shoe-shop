@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import type { Database } from "@/types/database";
+import { authCookieOptions, hardenAuthCookie } from "@/lib/security/cookies";
 
 /**
  * Dùng trong Server Component, Server Action, Route Handler.
@@ -13,6 +14,8 @@ export async function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      cookieOptions: authCookieOptions(),
+      global: { headers: process.env.VELOCE_SECURITY_KEY ? { "x-veloce-server-token": process.env.VELOCE_SECURITY_KEY } : {} },
       cookies: {
         getAll() {
           return cookieStore.getAll();
@@ -20,7 +23,7 @@ export async function createClient() {
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options),
+              cookieStore.set(name, value, hardenAuthCookie(options)),
             );
           } catch {
             // Bỏ qua khi gọi từ Server Component — middleware đã lo việc refresh session.

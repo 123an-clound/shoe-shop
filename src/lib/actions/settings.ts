@@ -1,5 +1,7 @@
 "use server";
 
+import { PublicError, databaseError } from "@/lib/security/errors";
+
 import { revalidatePath, updateTag } from "next/cache";
 import { requireAdmin, actionErrorMessage } from "@/lib/auth/requireAdmin";
 import { settingsFormSchema } from "@/lib/validation/settings";
@@ -7,16 +9,17 @@ import { validateUploadedWebp } from "@/lib/validation/image";
 import { z } from "zod";
 import type { ActionResult } from "@/lib/actions/products";
 import type { UploadImageResult } from "@/lib/actions/products";
+import { prepareUploadedImage } from "@/lib/security/image";
 
 export async function updateSettings(input: unknown, expectedUpdatedAt: string): Promise<ActionResult> {
   try {
     const { supabase } = await requireAdmin();
     if (!z.string().datetime({ offset: true }).safeParse(expectedUpdatedAt).success) {
-      throw new Error("Phiên bản cấu hình không hợp lệ. Hãy tải lại trang.");
+      throw new PublicError("Phiên bản cấu hình không hợp lệ. Hãy tải lại trang.");
     }
     const parsed = settingsFormSchema.safeParse(input);
     if (!parsed.success) {
-      throw new Error(parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ.");
+      throw new PublicError(parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ.");
     }
     const data = parsed.data;
 
@@ -62,8 +65,8 @@ export async function updateSettings(input: unknown, expectedUpdatedAt: string):
       .select("id")
       .maybeSingle();
 
-    if (error) throw new Error(error.message);
-    if (!updated) throw new Error("Cấu hình đã được người khác thay đổi. Tải lại để xem và áp dụng thay đổi mới nhất.");
+    if (error) throw databaseError(error);
+    if (!updated) throw new PublicError("Cấu hình đã được người khác thay đổi. Tải lại để xem và áp dụng thay đổi mới nhất.");
 
     // Tên cửa hàng + màu ảnh hưởng toàn site — làm mới cache + toàn bộ layout gốc (mục 4.9 PLAN.md).
     updateTag("settings");
@@ -82,15 +85,16 @@ export async function uploadSettingsImage(formData: FormData): Promise<UploadIma
     const file = formData.get("file");
     const path = formData.get("path");
     if (!(file instanceof File) || typeof path !== "string" || !/^branding\/(logo|hero)-[a-f0-9-]{36}\.webp$/.test(path)) {
-      throw new Error("Thiếu dữ liệu ảnh.");
+      throw new PublicError("Thiếu dữ liệu ảnh.");
     }
     const validationError = await validateUploadedWebp(file, path);
-    if (validationError) throw new Error(validationError);
+    if (validationError) throw new PublicError(validationError);
+    const safeImage = await prepareUploadedImage(file);
 
     const { error } = await supabase.storage
       .from("veloce")
-      .upload(path, file, { contentType: file.type });
-    if (error) throw new Error(error.message);
+      .upload(path, safeImage, { contentType: "image/webp" });
+    if (error) throw databaseError(error);
 
     const { data } = supabase.storage.from("veloce").getPublicUrl(path);
     return { success: true, url: data.publicUrl };

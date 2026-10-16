@@ -1,9 +1,10 @@
 import { z } from "zod";
 
 export const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
+export const VIDEO_UPLOAD_BUCKET = "veloce-uploads";
 export const PRODUCT_VIDEO_PATH_PATTERN = /^videos\/[a-z0-9-]+-[a-f0-9-]{36}\.(mp4|webm)$/;
 export const videoUploadSchema = z.object({
-  slug: z.string().min(2).regex(/^[a-z0-9-]+$/),
+  slug: z.string().min(2).max(120).regex(/^[a-z0-9-]+$/),
   type: z.enum(["video/mp4", "video/webm"]),
   size: z.number().int().positive().max(MAX_VIDEO_BYTES, "Video tối đa 50 MB"),
 });

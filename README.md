@@ -16,6 +16,17 @@ Mở [http://localhost:3000](http://localhost:3000).
 Cần file `.env.local` (đã có sẵn, không commit) với `NEXT_PUBLIC_SUPABASE_URL`
 và `NEXT_PUBLIC_SUPABASE_ANON_KEY` — xem `PLAN.md` mục 1.
 
+Server login/upload cần thêm `VELOCE_SECURITY_KEY` (32 byte ngẫu nhiên,
+64 ký tự hex), hash tương ứng trong `private.veloce_security_config`.
+Đặt key qua secret store/Vercel sensitive env, không dùng `NEXT_PUBLIC_`.
+Auth cookie chỉ server đọc; browser Supabase client stateless dành cho signed
+Storage upload. Xem [security review](docs/security-review.md) và
+[rollout/backup/monitoring](docs/security-rollout.md) trước khi phát hành.
+
+Backup mã hóa trên máy đã cấu hình theo [hướng dẫn backup](docs/security-backup.md):
+`npm run backup:run` tạo snapshot, `npm run backup:verify` khôi phục thử trong RAM.
+Khóa Windows DPAPI nằm ngoài OneDrive; đọc giới hạn phục hồi trước khi đổi máy.
+
 ## Lệnh khác
 
 ```bash

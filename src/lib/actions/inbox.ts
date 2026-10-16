@@ -1,5 +1,7 @@
 "use server";
 
+import { PublicError } from "@/lib/security/errors";
+
 import { revalidatePath } from "next/cache";
 import { requireAdmin, actionErrorMessage } from "@/lib/auth/requireAdmin";
 import type { ActionResult } from "@/lib/actions/products";
@@ -16,7 +18,7 @@ export async function updateContactMessageStatus(
   try {
     const { supabase } = await requireAdmin();
     if (!idSchema.safeParse(id).success || !timestampSchema.safeParse(expectedUpdatedAt).success || !["new", "read", "archived"].includes(status)) {
-      throw new Error("Dữ liệu cập nhật không hợp lệ.");
+      throw new PublicError("Dữ liệu cập nhật không hợp lệ.");
     }
     const { data, error } = await supabase
       .from("veloce_contact_messages")
@@ -25,8 +27,8 @@ export async function updateContactMessageStatus(
       .eq("updated_at", expectedUpdatedAt)
       .select("id")
       .maybeSingle();
-    if (error) throw new Error("Không cập nhật được trạng thái tin nhắn.");
-    if (!data) throw new Error("Tin nhắn vừa được cập nhật ở nơi khác. Hãy tải lại trước khi sửa tiếp.");
+    if (error) throw new PublicError("Không cập nhật được trạng thái tin nhắn.");
+    if (!data) throw new PublicError("Tin nhắn vừa được cập nhật ở nơi khác. Hãy tải lại trước khi sửa tiếp.");
     revalidatePath("/admin/hop-thu");
     return { success: true };
   } catch (error) {
@@ -42,7 +44,7 @@ export async function updateNewsletterStatus(
   try {
     const { supabase } = await requireAdmin();
     if (!idSchema.safeParse(id).success || !timestampSchema.safeParse(expectedUpdatedAt).success || !["active", "unsubscribed"].includes(status)) {
-      throw new Error("Dữ liệu cập nhật không hợp lệ.");
+      throw new PublicError("Dữ liệu cập nhật không hợp lệ.");
     }
     const { data, error } = await supabase
       .from("veloce_newsletter_subscribers")
@@ -51,8 +53,8 @@ export async function updateNewsletterStatus(
       .eq("updated_at", expectedUpdatedAt)
       .select("id")
       .maybeSingle();
-    if (error) throw new Error("Không cập nhật được trạng thái email.");
-    if (!data) throw new Error("Email vừa được cập nhật ở nơi khác. Hãy tải lại trước khi sửa tiếp.");
+    if (error) throw new PublicError("Không cập nhật được trạng thái email.");
+    if (!data) throw new PublicError("Email vừa được cập nhật ở nơi khác. Hãy tải lại trước khi sửa tiếp.");
     revalidatePath("/admin/hop-thu");
     return { success: true };
   } catch (error) {

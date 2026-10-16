@@ -5,7 +5,7 @@ import { Video, X } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { createProductVideoUpload, completeProductVideoUpload } from "@/lib/actions/productMedia";
-import { videoValidationError } from "@/lib/validation/video";
+import { VIDEO_UPLOAD_BUCKET, videoValidationError } from "@/lib/validation/video";
 
 export function VideoUploader({ slug, value, onChange, onUploadingChange }: {
   slug: string;
@@ -26,7 +26,7 @@ export function VideoUploader({ slug, value, onChange, onUploadingChange }: {
       const session = await createProductVideoUpload({ slug, type: file.type, size: file.size });
       if (!session.success) throw new Error(session.error);
       // Tải trực tiếp lên Storage, tránh giới hạn kích thước body của Server Action/Vercel.
-      const { error } = await createClient().storage.from("veloce").uploadToSignedUrl(session.path, session.token, file, { contentType: file.type, cacheControl: "31536000" });
+      const { error } = await createClient().storage.from(VIDEO_UPLOAD_BUCKET).uploadToSignedUrl(session.path, session.token, file, { contentType: file.type, cacheControl: "31536000" });
       if (error) throw new Error("Không tải được video. Kiểm tra kết nối và thử lại.");
       const result = await completeProductVideoUpload(session.path);
       if (!result.success) throw new Error(result.error);

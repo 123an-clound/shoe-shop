@@ -6,11 +6,16 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
-    "test": "tsx --test tests/*.test.ts",
-    "test:db": "node tests/product-inventory-db.mjs && node tests/order-operations-db.mjs && node tests/customer-accounts-db.mjs && node tests/abuse-protection-db.mjs",
+    "lint": "node scripts/lint.mjs",
+    "test": "tsx --test tests/*.test.ts tests/*.test.mjs",
+    "test:db": "node tests/product-inventory-db.mjs && node tests/order-operations-db.mjs && node tests/customer-accounts-db.mjs && node tests/abuse-protection-db.mjs && node tests/security-hardening-db.mjs",
     "test:e2e": "playwright test",
-    "gen:images": "tsx scripts/upload-images.mjs"
+    "gen:images": "tsx scripts/upload-images.mjs",
+    "security:scan": "node scripts/security-scan.mjs",
+    "test:security:storage": "node --import tsx tests/security-storage-live.mjs",
+    "test:security:deployment": "node tests/security-deployment-live.mjs",
+    "backup:run": "node scripts/backup/run.mjs",
+    "backup:verify": "node scripts/backup/run.mjs --verify-latest"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
@@ -30,7 +35,8 @@
     "sonner": "^2.0.8",
     "tailwind-merge": "^3.6.0",
     "zod": "^4.4.3",
-    "zustand": "^5.0.15"
+    "zustand": "^5.0.15",
+    "sharp": "^0.35.3"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.10",
@@ -41,7 +47,6 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "^16.3.8",
-    "sharp": "^0.35.3",
     "tailwindcss": "^4",
     "tsx": "^4.23.12",
     "typescript": "^5"

@@ -90,10 +90,35 @@ test("production responses include security headers and fresh CSP nonces", async
   expect(first.headers()["x-content-type-options"]).toBe("nosniff");
   expect(first.headers()["x-frame-options"]).toBe("DENY");
   expect(first.headers()["x-powered-by"]).toBeUndefined();
-  const policy = first.headers()["content-security-policy-report-only"];
+  expect(first.status()).toBe(200);
+  expect(first.headers()["content-security-policy-report-only"]).toBeUndefined();
+  const policy = first.headers()["content-security-policy"];
   expect(policy).toContain("strict-dynamic");
-  expect(policy).not.toEqual(second.headers()["content-security-policy-report-only"]);
+  expect(policy).not.toEqual(second.headers()["content-security-policy"]);
   const nonce = policy.match(/'nonce-([^']+)'/)?.[1];
   expect(nonce).toBeTruthy();
   expect(await first.text()).toContain(`nonce="${nonce}"`);
+});
+
+test("CSP blocks an inline script without a nonce while the storefront stays interactive", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.route(/\/$/, async route => {
+    const response = await route.fetch();
+    const body = (await response.text()).replace("</head>", '<script>document.documentElement.dataset.securityProbe="executed"</script></head>');
+    await route.fulfill({ response, body });
+  });
+  await page.goto("/");
+  // Payload phải đi qua HTML parser; DevTools evaluate có thể mang quyền script tin cậy.
+  const executed = await page.evaluate(() => document.documentElement.dataset.securityProbe === "executed");
+  expect(executed).toBe(false);
+  await page.getByRole("button", { name: "Mở menu", exact: true }).click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+});
+
+test("session API does not grant cross-origin credentialed reads", async ({ request }) => {
+  const headers = { Origin: "https://untrusted.invalid", "Access-Control-Request-Method": "GET" };
+  for (const response of [await request.get("/api/customer/session", { headers }), await request.fetch("/api/customer/session", { method: "OPTIONS", headers })]) {
+    expect(response.headers()["access-control-allow-origin"]).toBeUndefined();
+    expect(response.headers()["access-control-allow-credentials"]).toBeUndefined();
+  }
 });

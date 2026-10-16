@@ -57,7 +57,7 @@ Tồn kho tự trừ khi đặt, hết hàng thì chặn mua. Database đã có 
 - **`veloce_cancel_order(uuid)`** — hủy đơn và hoàn kho. Chỉ admin gọi được.
 
 ❌ **Không `insert` thẳng vào `veloce_orders`.** ❌ **Không tự `update` cột `stock` từ luồng mua hàng.**
-Lỗi hàm ném ra đã là **tiếng Việt viết cho người dùng đọc** (`Sản phẩm "X" chỉ còn 4 đôi`) — hiển thị nguyên văn `error.message`, đừng thay bằng "Có lỗi xảy ra".
+Lỗi nghiệp vụ tiếng Việt (`Sản phẩm "X" chỉ còn 4 đôi`) chỉ hiển thị qua allowlist trong `lib/security/errors.ts`. Dùng `databaseError()` cho lỗi provider; chỉ `PublicError` đã kiểm soát được trả nguyên văn. Lỗi khác trả thông báo chung + mã hỗ trợ và log metadata đã che dữ liệu, không trả thẳng `error.message`.
 
 ⚠️ Supabase advisor sẽ báo `veloce_place_order` là SECURITY DEFINER mà anon gọi được. **Đó là chủ ý và bắt buộc** — đừng revoke execute, sẽ hỏng chức năng đặt hàng.
 

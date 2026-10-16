@@ -8,6 +8,11 @@ export async function verifyCustomerSession(supabase: Awaited<ReturnType<typeof 
   try {
     const { data: { user }, error } = await supabase.auth.getUser();
     if (error && !isAuthSessionMissingError(error)) return { user: null, error: true };
+    if (user) {
+      const { data: active, error: sessionError } = await supabase.rpc("veloce_session_valid");
+      if (sessionError) return { user: null, error: true };
+      if (!active) return { user: null, error: false };
+    }
     return { user, error: false };
   } catch { return { user: null, error: true }; }
 }

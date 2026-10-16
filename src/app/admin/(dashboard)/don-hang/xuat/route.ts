@@ -2,6 +2,7 @@ import { requireAdmin } from "@/lib/auth/requireAdmin";
 import { normalizeOrderFilters } from "@/lib/orderOperations";
 import { ordersToCsv } from "@/lib/orderExport";
 import { getOrderExport } from "@/lib/queries/adminOrderOperations";
+import { safeErrorMessage } from "@/lib/security/errors";
 
 export async function GET(request: Request) {
   try { await requireAdmin(); } catch {
@@ -17,6 +18,6 @@ export async function GET(request: Request) {
       "X-Content-Type-Options": "nosniff",
     } });
   } catch (error) {
-    return new Response(error instanceof Error ? error.message : "Không xuất được đơn hàng.", { status: 422, headers: { "Cache-Control": "no-store" } });
+    return new Response(safeErrorMessage(error), { status: 422, headers: { "Cache-Control": "no-store" } });
   }
 }

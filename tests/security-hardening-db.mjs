@@ -1,0 +1,81 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { PGlite } from '@electric-sql/pglite';
+
+const db = new PGlite();
+const migration = '20261015184130_veloce_security_hardening.sql';
+try {
+  const fixture = await readFile(new URL('./order-operations-db.mjs', import.meta.url), 'utf8');
+  await db.exec(fixture.slice(fixture.indexOf('await db.exec(`') + 15, fixture.indexOf('`);')));
+  await db.exec(`
+    grant usage on schema auth to anon;
+    create table auth.users(id uuid primary key);
+    create table auth.sessions(id uuid primary key,user_id uuid,created_at timestamptz default now(),updated_at timestamptz default now(),not_after timestamptz);
+    create function auth.jwt() returns jsonb language sql as $$ select jsonb_build_object('session_id',nullif(current_setting('test.session_id',true),'')) $$;
+    create schema storage;
+    create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);
+    insert into storage.buckets values('veloce','veloce',true,52428800,array['image/webp','image/svg+xml','video/mp4']);
+    create table storage.objects(id uuid default gen_random_uuid(),bucket_id text,name text);
+    alter table storage.objects enable row level security;
+    grant usage on schema storage to authenticated,anon;
+    grant select,insert,update,delete on storage.objects to authenticated;
+    create table public.veloce_contact_messages(email text);
+    create table public.veloce_newsletter_subscribers(email text);
+    create table private.veloce_form_rate_limits(email text);
+    alter table public.veloce_products add column size_guide jsonb default '[]';
+  `);
+  for (const name of ['20261012134125_veloce_variant_inventory.sql','20261002093951_veloce_checkout_idempotency.sql','20261013073147_veloce_order_operations.sql','20261013082046_veloce_order_event_timestamps.sql','20261013090202_veloce_customer_accounts.sql','20261013122916_veloce_customer_order_groups.sql','20261015033947_veloce_abuse_protection.sql',migration,'20261015191044_veloce_session_activity.sql','20261016000011_veloce_security_enforcement.sql']) {
+    await db.exec(await readFile(new URL('../supabase/migrations/' + name, import.meta.url), 'utf8'));
+  }
+  const admin='00000000-0000-4000-8000-000000000099',a='00000000-0000-4000-8000-000000000011',b='00000000-0000-4000-8000-000000000012';
+  const session='00000000-0000-4000-8000-000000000077',product='00000000-0000-4000-8000-000000000001',key='b'.repeat(64),token='a'.repeat(64);
+  await db.query("insert into private.veloce_security_config(id,server_key_hash) values(1,encode(sha256(convert_to($1,'UTF8')),'hex'))",[key]);
+  await db.query('insert into auth.users values($1),($2),($3)',[a,admin,b]);
+  await db.query('insert into auth.sessions(id,user_id) values($1,$2)',[session,admin]);
+  await db.query('insert into auth.sessions(id,user_id) values($1,$1),($2,$2)',[a,b]);
+  await db.exec('insert into private.veloce_session_activity(session_id) select id from auth.sessions');
+  await db.query("insert into public.veloce_products(id,name,slug,price,stock,images,is_published,sizes,colors) values($1,'Fixture','fixture',500000,100,'{}',true,'{39}',$2)",[product,JSON.stringify([{name:'Black',hex:'#000000',inventory:[{size:39,quantity:100}]}])]);
+  const actor=async(uid)=>{await db.exec('reset role');await db.query("select set_config('test.actor',$1,false)",[uid??'']);await db.query("select set_config('test.session_id',$1,false)",[uid===admin?session:uid??'']);await db.exec(uid?'set role authenticated':'set role anon');};
+  await actor(null);
+  await assert.rejects(db.query("select public.veloce_check_auth_rate('admin-login','victim@example.com')"),{code:'42501'});
+  const rate=(source,secret=key)=>db.query("select public.veloce_check_auth_rate_trusted('admin-login',$1,$2,$3)",['c'.repeat(64),source.repeat(64),secret]);
+  await assert.rejects(rate('d','e'.repeat(64)),{code:'42501'});
+  for(let i=0;i<10;i++) await rate('d');
+  await assert.rejects(rate('d'),{code:'P0001'});
+  await rate('e'); // Attacker A cannot consume the source/account quota of B.
+  await assert.rejects(db.query('select * from private.veloce_security_config'),{code:'42501'});
+  console.log('PASS: direct anonymous counter denied, trusted server key required, source/account quotas isolated');
+  const items=JSON.stringify([{product_id:product,color:'#000000',size:39,quantity:1}]);
+  const place=(note)=>db.query("select * from public.veloce_place_order_with_receipt(gen_random_uuid(),$1,'Fixture','0900000000','Fixture address',$2,null,$3)",[token,items,note??null]);
+  await assert.rejects(place('x'.repeat(2001)),{code:'22023'});
+  const guest=(await place('Normal note')).rows[0];
+  assert.ok((await db.query('select public.veloce_customer_receipt($1,$2) as data',[guest.order_id,token])).rows[0].data);
+  await db.exec("reset role; update private.veloce_order_receipts set created_at=now()-interval '8 days'; set role anon;");
+  assert.equal((await db.query('select public.veloce_customer_receipt($1,$2) as data',[guest.order_id,token])).rows[0].data,null);
+  await actor(admin);
+  assert.equal((await db.query('select public.veloce_claim_customer_order($1,$2) as ok',[guest.order_id,token])).rows[0].ok,false);
+  await actor(a);
+  const owned=(await place('Owned by A')).rows[0];
+  assert.equal((await db.query('select public.veloce_customer_orders() as data')).rows[0].data.total,1);
+  await actor(b);
+  assert.equal((await db.query('select public.veloce_customer_orders() as data')).rows[0].data.total,0);
+  assert.equal((await db.query('select public.veloce_customer_receipt($1,$2) as data',[owned.order_id,token])).rows[0].data,null);
+  assert.equal((await db.query('select public.veloce_claim_customer_order($1,$2) as ok',[owned.order_id,token])).rows[0].ok,false);
+  await assert.rejects(db.query('select public.veloce_admin_order_summary()'),{code:'P0001'});
+  await actor(admin);
+  assert.equal((await db.query('select public.veloce_session_valid() as ok')).rows[0].ok,true);
+  await assert.rejects(db.query("insert into storage.objects(bucket_id,name) values('veloce','video.mp4')"),{code:'42501'});
+  await db.query("select set_config('request.headers',$1,false)",[JSON.stringify({'x-veloce-server-token':key})]);
+  assert.equal((await db.query('select public.veloce_touch_session() as ok')).rows[0].ok,true);
+  await db.query("insert into storage.objects(bucket_id,name) values('veloce','video.mp4')");
+  await db.exec("reset role; update auth.sessions set created_at=now()-interval '8 days'; set role authenticated;");
+  assert.equal((await db.query('select public.veloce_session_valid() as ok')).rows[0].ok,false);
+  await assert.rejects(db.query("select public.veloce_admin_order_summary()"),{code:'P0001'});
+  await db.exec("reset role; update auth.sessions set created_at=now(),updated_at=now(); update private.veloce_session_activity set last_seen=now()-interval '2 days'; set role authenticated;");
+  assert.equal((await db.query('select public.veloce_session_valid() as ok')).rows[0].ok,false);
+  assert.equal((await db.query('select public.veloce_touch_session() as ok')).rows[0].ok,false);
+  await db.exec("reset role; delete from auth.sessions; set role authenticated;");
+  assert.equal((await db.query('select public.veloce_session_valid() as ok')).rows[0].ok,false);
+  await assert.rejects(db.query("select public.veloce_customer_orders()"),{code:'42501'});
+  console.log('PASS: server receipt TTL, input bounds, trusted-only public uploads, expired/idle/revoked sessions denied');
+} finally { await db.close(); }
